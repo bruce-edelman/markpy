@@ -27,6 +27,7 @@ def main():
     test_model = mp.Model(model_exp, data, sig, D, mp.res_norm, mp.liklie_norm)
     mc = mp.MarkChain(test_model, D, priorrange, sigprop)
     mc.run(Nsteps, data, t)
+    """
     fig, axs = plt.subplots(nrows=1, ncols=3)
     ax = axs[0]
     ax.plot(mc.states[0,:,0],mc.states[0,:,1], 'rx')
@@ -34,13 +35,43 @@ def main():
     ax.plot(mc.states[0,:,0],mc.states[0,:,2], 'rx')
     ax = axs[2]
     ax.plot(mc.states[0,:,2],mc.states[0,:,1], 'rx')
+    plt.show()
+    """
+    #plot_chains(mc)
 
+    plot_signal(mc, t, data)
+
+def plot_chains(chain):
+    fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True)
+    ax = axs[0]
+    ax.plot(chain.states[0,:,0], 'r')
+    ax.set_xlabel("Iteration")
+    ax.set_ylabel("Amplitude")
+    ax = axs[1]
+    ax.plot(chain.states[0,:,1], 'b')
+    ax.set_ylabel('Frequency')
+    ax = axs[2]
+    ax.plot(chain.states[0,:,2], 'g')
+    ax.set_ylabel('Phase')
     plt.show()
 
 
+def plot_signal(chain, t, data):
+    percentile5 = np.zeros(len(t))
+    percentile95 = np.zeros(len(t))
+    for time in t:
+        d = model_exp(chain.states[0,:,:], data, time)
+        percentile5[time] = np.percentile(d, 5)
+        percentile95[time] = np.percentile(d, 95)
 
-
-
+    fig, ax = plt.subplots()
+    ax.fill_between(t, percentile5, percentile95, color='orchid', alpha=0.5, label="90% CI")
+    plt.plot(data, 'x')
+    plt.plot(data, 'k')
+    plt.xlabel('time')
+    plt.ylabel('data')
+    plt.legend()
+    plt.show()
 
 if __name__ == "__main__":
     main()
