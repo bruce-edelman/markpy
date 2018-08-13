@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/markPy.iml" filepath="$PROJECT_DIR$/.idea/markPy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/markpy.iml" filepath="$PROJECT_DIR$/.idea/markpy.iml" />
     </modules>
   </component>
 </project>
