@@ -23,44 +23,40 @@ def main():
     sig = 1
     D = 3
     t, data = get_data()
+    params = ['Amp', 'Freq', 'Phase']
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi]])
     test_model = mp.Model(model_exp, data, sig, D, mp.res_norm, mp.liklie_norm)
-    mc = mp.MarkChain(test_model, D, priorrange, sigprop)
+    mc = mp.MarkChain(test_model, D, priorrange, sigprop, params)
     mc.run(Nsteps, data, t)
-    """
-    fig, axs = plt.subplots(nrows=1, ncols=3)
-    ax = axs[0]
-    ax.plot(mc.states[0,:,0],mc.states[0,:,1], 'rx')
-    ax = axs[1]
-    ax.plot(mc.states[0,:,0],mc.states[0,:,2], 'rx')
-    ax = axs[2]
-    ax.plot(mc.states[0,:,2],mc.states[0,:,1], 'rx')
-    plt.show()
-    """
-    #plot_chains(mc)
-
-    plot_signal(mc, t, data)
+    plot_chains(mc.states)
+    samps = mc.get_independent_samps()
+    plot_chains(samps)
+    plot_signal(samps, t, data)
+    #mc.plot_acls()
+    plot_signal(mc.states, t, data)
 
 def plot_chains(chain):
-    fig, axs = plt.subplots(nrows=3, ncols=1, sharex=True)
+    fig, axs = plt.subplots(nrows=3, ncols=1, sharex='col')
     ax = axs[0]
-    ax.plot(chain.states[0,:,0], 'r')
+    ax.plot(chain[0,:,0], 'r')
     ax.set_xlabel("Iteration")
     ax.set_ylabel("Amplitude")
     ax = axs[1]
-    ax.plot(chain.states[0,:,1], 'b')
+    ax.plot(chain[0,:,1], 'b')
     ax.set_ylabel('Frequency')
     ax = axs[2]
-    ax.plot(chain.states[0,:,2], 'g')
+    ax.plot(chain[0,:,2], 'g')
     ax.set_ylabel('Phase')
     plt.show()
+
+
 
 
 def plot_signal(chain, t, data):
     percentile5 = np.zeros(len(t))
     percentile95 = np.zeros(len(t))
     for time in t:
-        d = model_exp(chain.states[0,:,:], data, time)
+        d = model_exp(chain[0,:,:], data, time)
         percentile5[time] = np.percentile(d, 5)
         percentile95[time] = np.percentile(d, 95)
 
