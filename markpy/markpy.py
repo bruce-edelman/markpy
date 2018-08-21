@@ -43,7 +43,6 @@ class MarkChain(object):
         self.states = np.array([[self.oldsamp]]) #initialize our output
         self.params = params
 
-    @classmethod
     def step(self, *kargs):
         # this function performs the Metropolis-Hastings Algorthim stepping
 
@@ -55,7 +54,6 @@ class MarkChain(object):
             self.acc += 1
         self.oldsamp = newsamp #rese oldsamp variable for next iteration
 
-    @classmethod
     def proposedStep(self):
         #random walk proposed step with a normal distribution
         return self.oldsamp+np.random.normal(0.,self.sigmaprop,self.dim)
@@ -85,7 +83,6 @@ class MarkChain(object):
         #function return the acceptence ratio of the chain
         return 1.*self.acc/self.N
 
-    @classmethod
     def run(self, N, *kargs):
         #function called to run the chain, takes in N numbers of steps to run and *kargs which depend on The model we set up
         self.N = N
@@ -93,7 +90,6 @@ class MarkChain(object):
             self.step(*kargs)
         return None
 
-    @classmethod
     def hastingsRatio(self, newsamp, *kargs):
         #function calculates the hastings ratio and decides to accept or reject proposed step
         if not ((np.array([p1-p2 for p1,p2 in zip(newsamp, np.transpose(self.priorrange)[:][0])])>0).all()
@@ -116,7 +112,6 @@ class MarkChain(object):
             acc = np.random.choice([True, False], p=[prob,1.-prob])
             return acc, acc*newsamp + (1. - acc)*self.oldsamp
 
-    @classmethod
     def get_acl(self):
         #function to get the autocorrelation length of the markov chain
         acls = {} #initialize acls as a dict
@@ -128,7 +123,6 @@ class MarkChain(object):
             acls[self.params[i]] = acl
         return acls #returns a dictionary with key values of names the params and values if acl for each param
 
-    @classmethod
     def burnin_nacl(self, nacls=10):
         # function to check if the chain is burned in via the nacls route
         #default to nacls to 10. burned in if it has been thorugh max(acls)*nacls iterations in the chain. THis is always same for all params
@@ -139,11 +133,14 @@ class MarkChain(object):
             if max_acl < np.max(acl[self.params[i]]):
                 max_acl = np.max(acl[self.params[i]])
         burn_idx = nacls*max_acl
-        is_burned_in = burn_idx < len(self.states) #check if burned in
+        print(burn_idx)
+        print(len(self.states[0,:,0]))
+
+        is_burned_in = burn_idx < len(self.states[0,:,0]) #check if burned in
+        print(is_burned_in)
         #returns abn int with index of where we burn in at and bool if if we are burnt in or not with current input chain
         return burn_idx, is_burned_in
 
-    @classmethod
     def get_burn_samps(self):
         # this function gets returns the states of the chain that are after the given burn_idx (cuts off the not burned in part)
         idx, isburn = self.burnin_nacl()
@@ -152,23 +149,26 @@ class MarkChain(object):
             return self.states[:,::idx,:]
         else:
             #if not burned in print statement and return None
-            print("CHAIN NOT BURNED IN")
-            return None
+            print("CHAIN NOT BURNED IN - burnin")
+            return self.states[:,0,:]
 
-    @classmethod
     def get_independent_samps(self):
         #function that returns the independent samples of the chain
         #first get the correlation length from the other classmethod
         corrleng = self.get_corrlen()
         burnid, isburned = self.burnin_nacl() #now get burned in to make sure we add the two
         if isburned: #if we are burned in return the correct samps
-            corrleng += burnid
+            corrleng = max(corrleng, burnid)
+            print(corrleng)
             return self.states[:, ::corrleng, :]
         else: # otherwise print statement to tell user we are not burned in and return None
-            print("CHIAN NOT BURNED IN")
-            return None
+            print("CHIAN NOT BURNED IN - corrlen")
+            return self.states[:,0,:]
 
-    @classmethod
+    def get_effective_AR(self):
+        ind_samps = self.get_independent_samps()
+        return 1.*len(ind_samps)/self.N
+
     def plot_acls(self):
         #function to plot acls (mainly used in testing)
         acls = self.get_acl()
@@ -178,7 +178,6 @@ class MarkChain(object):
             ax.plot(acls[self.params[i]])
         plt.show()
 
-    @classmethod
     def get_corrlen(self):
         #function that gets the correlation lenght to be used in returning independent samples
         acls = self.get_acl()
@@ -186,17 +185,12 @@ class MarkChain(object):
         cl = np.zeros([self.dim])
         for p in range(self.dim): #find when acl drops to less than 0.08 for each param
             for i in acls[self.params[p]]:
-                if i < 0.08:
+                if i < 0.1:
                     cl[p] = ct
                 else:
                     ct += 1
         #now we take the longest length of each param corrlength and return that
-        print(int(np.max(cl)))
         return int(np.max(cl))
-
-
-
-
 
 
 def compute_acl(samps):

@@ -6,7 +6,7 @@ def get_data():
     A = 2.
     f = 4. * 2. * np.pi/20
     phi = 1.
-    np.random.seed(10)
+    #np.random.seed(10)
     n = np.random.normal(0., 1, 20)
     t = np.arange(20)
     return t, A*np.cos(f*t+phi) + n
@@ -17,9 +17,9 @@ def model_exp(samp, data, t):
 
 
 def main():
-    np.random.seed(10)
-    Nsteps = 200000
-    sigprop = 0.09
+    #np.random.seed(10)
+    Nsteps = 1000000
+    sigprop = 0.11
     sig = 1
     D = 3
     t, data = get_data()
@@ -32,7 +32,7 @@ def main():
     samps = mc.get_independent_samps()
     plot_chains(samps)
     plot_signal(samps, t, data)
-    #mc.plot_acls()
+    mc.plot_acls()
     plot_signal(mc.states, t, data)
 
 def plot_chains(chain):
