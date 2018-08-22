@@ -166,6 +166,7 @@ class MarkChain(object):
             return self.states[:,0,:]
 
     def get_effective_AR(self):
+        #function that uses the number of current independent samples to return the effective acceptence ratio of the chain
         ind_samps = self.get_independent_samps()
         return 1.*len(ind_samps)/self.N
 
@@ -194,6 +195,8 @@ class MarkChain(object):
 
 
 def compute_acl(samps):
+    #global function that computes the auto-correlation length from an array of sampkles
+    #returns and array of the acl for each iteration
     m = samps-np.mean(samps)
     f = np.fft.fft(m)
     p = np.array([np.real(v)**2+np.imag(v)**2 for v in f])
@@ -208,6 +211,14 @@ class Model(object):
     programmed in when using markpy
     """
     def __init__(self, model, d, sig, D, res, lik, prior=1):
+        #this Model class has parameters:
+        # model - the model function of the problem we want to sample
+        # d is the data we are inferring from
+        # sig is the sigma of the model,
+        # D is the dimension of the model
+        # res is a function that calculates the residual,
+        # lik is a function that calculates the liklihood of the model
+        # prior is set to uniform (prior =1) but we can adjust this if wanted
         self.data = d # data
         self.model = model # primary model using
         self.dim = D # dimension of model
@@ -223,11 +234,21 @@ class Model(object):
         return self.prior*likliehood
 
 
+#function lists
+#function types, res has parameters:
+# data, model, samp. *kargs
+
+# lik_type has parameters:
+# sig, mean, res
+
+
 def res_norm(data, model, samp, *kargs):
+    # function of Res_type, normal
     return (data - model(samp, *kargs))**2
 
 
 def liklie_norm(sig, mean, res):
+    # function of Lik_type, normal,
     return np.exp(-mean*(res.sum()/sig**2))
 
 
