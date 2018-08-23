@@ -218,7 +218,7 @@ class Model(object):
         # D is the dimension of the model
         # res is a function that calculates the residual,
         # lik is a function that calculates the liklihood of the model
-        # prior is set to uniform (prior =1) but we can adjust this if wanted
+        # prior is set to uniform (prior =1) but we can adjust this if wantegitd
         self.data = d # data
         self.model = model # primary model using
         self.dim = D # dimension of model
