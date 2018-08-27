@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import markpy.chain as mp
+from markpy.models.models import Model
+from markpy.models import funcs
+
 
 def get_data():
     A = 2.
@@ -18,14 +21,14 @@ def model_exp(samp, data, t):
 
 def main():
     #np.random.seed(10)
-    Nsteps = 1000000
+    Nsteps = 10000
     sigprop = 0.11
     sig = 1
     D = 3
     t, data = get_data()
     params = ['Amp', 'Freq', 'Phase']
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi]])
-    test_model = mp.Model(model_exp, data, sig, D, mp.res_norm, mp.liklie_norm)
+    test_model = Model(model_exp, data, sig, D, funcs.res_norm, funcs.liklie_norm)
     mc = mp.MarkChain(test_model, D, priorrange, sigprop, params)
     mc.run(Nsteps, data, t)
     plot_chains(mc.states)
