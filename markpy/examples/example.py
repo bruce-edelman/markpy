@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import markpy as mp
+import markpy.chain as mp
 
 def get_data():
     A = 2.
