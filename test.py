@@ -1,8 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import markpy.chain as mp
-from markpy.models.models import Model
-from markpy.models import funcs
+import markpy.sampler as mp
+
 
 
 def get_data():
@@ -28,7 +27,7 @@ def main():
     t, data = get_data()
     params = ['Amp', 'Freq', 'Phase']
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi]])
-    test_model = Model(model_exp, data, sig, D, funcs.res_norm, funcs.liklie_norm)
+    test_model = mp.Model(model_exp, data, sig, D, mp.res_norm, mp.liklie_norm)
     mc = mp.MarkChain(test_model, D, priorrange, sigprop, params)
     mc.run(Nsteps, data, t)
     plot_chains(mc.states)
@@ -51,8 +50,6 @@ def plot_chains(chain):
     ax.plot(chain[0,:,2], 'g')
     ax.set_ylabel('Phase')
     plt.show()
-
-
 
 
 def plot_signal(chain, t, data):
