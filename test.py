@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import markpy.sampler as mp
 
 
-
 def get_data():
     A = 2.
     f = 4. * 2. * np.pi/20

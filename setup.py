@@ -13,11 +13,6 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 # Fields marked as "Optional" may be commented out.
 
 
-# -- versioning ---------------------------------------------------------------
-
-cmdclass = versioneer.get_cmdclass()
-__version__ = versioneer.get_version()
-
 # -- dependencies -------------------------------------------------------------
 setup(
 

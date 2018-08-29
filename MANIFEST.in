@@ -1,2 +1,0 @@
-include versioneer.py
-include markpy/_version.py
