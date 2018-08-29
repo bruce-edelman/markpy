@@ -28,7 +28,7 @@ def main():
     params = ['Amp', 'Freq', 'Phase']
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi]])
     liklie = mp.Liklie_Norm(model_exp, mean, sig, data)
-    test_model = mp.Model(model_exp, data, sig, D, params)
+    test_model = mp.Model(model_exp, data, sig, D, params, liklie)
     mc = mp.MarkChain(test_model, D, priorrange, sigprop)
     mc.run(Nsteps, data, t)
     plot_chains(mc.states)

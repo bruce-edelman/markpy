@@ -31,6 +31,9 @@ class MarkChain(object):
     proposed step sigma for our normally distributed randomwalk
 
     '''
+
+    name = 'Metropolis-Hastings Chain'
+
     def __init__(self, PDF, d, priorrange, sigprop):
         # initialize the first sample in correct data structure
         self.oldsamp = np.array([np.random.uniform(priorrange[i][0],priorrange[i][1]) for i in range(d)])
@@ -40,6 +43,7 @@ class MarkChain(object):
         self.model= PDF #Model object created for specific problem
         self.priorrange = priorrange
         self.states = np.array([[self.oldsamp]]) #initialize our output
+
 
 
     def step(self, *kargs):
@@ -75,7 +79,7 @@ class MarkChain(object):
     @property
     def chain_parameters(self):
         #function returns a list of the parameters of the chain
-        return self.params
+        return self.model.params
 
     @property
     def AcceptenceRatio(self):
@@ -119,7 +123,7 @@ class MarkChain(object):
             acl = compute_acl(self.states[0,:,i]) #compute for each param
             if np.isinf(acl.any()): # if its inf then return the len of the chain
                 acl = len(self.states[0,:,i])
-            acls[self.params[i]] = acl
+            acls[self.model.params[i]] = acl
         return acls #returns a dictionary with key values of names the params and values if acl for each param
 
     def burnin_nacl(self, nacls=10):
@@ -129,8 +133,8 @@ class MarkChain(object):
         acl = self.get_acl() # get acls
         max_acl = 0
         for i in range(self.dim): # find the max acl for all the params
-            if max_acl < np.max(acl[self.params[i]]):
-                max_acl = np.max(acl[self.params[i]])
+            if max_acl < np.max(acl[self.model.params[i]]):
+                max_acl = np.max(acl[self.model.params[i]])
         burn_idx = nacls*max_acl
         print(burn_idx)
         print(len(self.states[0,:,0]))
@@ -192,6 +196,8 @@ class MarkChain(object):
         #now we take the longest length of each param corrlength and return that
         return int(np.max(cl))
 
+    def get_name(self):
+        return self.name
 
 def compute_acl(samps):
     #global function that computes the auto-correlation length from an array of sampkles
@@ -209,6 +215,8 @@ class Model(object):
     takes in three different fcts, model, res, lik and prior to initilialize. These fcts can be grabbed from markpy or
     programmed in when using markpy
     """
+    name = 'Base-Model'
+
     def __init__(self, model, d, sig, D, samp_params, liklie, static_params=None, prior=1):
         #this Model class has parameters:
         # model - the model function of the problem we want to sample
@@ -224,14 +232,18 @@ class Model(object):
         self.liklie = liklie #variable to store if we use the default liklie or other
         self.params = samp_params
         self.static = static_params
+        if self.dim != len(self.params):
+            print("ERROR: Dimension must be equal to the number of sampling parameters:")
 
     def get_posterior(self, samp, *kargs):
         return self.liklie._get_posterior(samp, *kargs)
 
+    def get_name(self):
+        return self.name
 
 
 class Liklie_Base(object):
-    name = 'Base'
+    name = 'Base-Liklie'
 
     def __init__(self, model_func, data):
         self.func = model_func
@@ -240,17 +252,27 @@ class Liklie_Base(object):
     def _residual(self, samp, *kargs):
         return (self.data-self.func(samp, *kargs))**2
 
+    def lnprob(self):
+        return
+
+    def lnpost(self):
+        return
+
+    def get_name(self):
+        return self.name
+
 
 class Liklie_Norm(Liklie_Base):
-    name = 'Norm'
+    name = 'Norm-Liklie'
 
     def __init__(self, model_func, sig, mean, data):
         self.sig = sig
         self.mean = mean
-        super(Liklie_Base, self).__init__(model_func, data)
+        super(Liklie_Norm, self).__init__(model_func, data)
 
     def _get_posterior(self, samp, *kargs):
         return np.exp(-self.mean*(self._residual(samp, *kargs).sum()/self.sig**2))
 
-
+    def get_name(self):
+        return self.name
 
