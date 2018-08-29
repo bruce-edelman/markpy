@@ -45,14 +45,14 @@
         <counts>
           <entry key="cfg" value="133" />
           <entry key="dummy" value="30" />
-          <entry key="py" value="16401" />
+          <entry key="py" value="18041" />
           <entry key="versioneer" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="163" />
-          <entry key="Python" value="16402" />
+          <entry key="Python" value="18042" />
         </counts>
       </usages-collector>
     </session>
@@ -65,10 +65,11 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1462">
-              <caret line="195" lean-forward="true" selection-start-line="195" selection-end-line="195" />
+            <state relative-caret-position="427">
+              <caret line="163" column="67" lean-forward="true" selection-start-line="163" selection-start-column="67" selection-end-line="163" selection-end-column="67" />
               <folding>
                 <element signature="e#856#874#0" expanded="true" />
+                <marker date="1535577813519" expanded="true" signature="3307:3368" ph="..." />
               </folding>
             </state>
           </provider>
@@ -77,8 +78,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/setup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="285">
-              <caret line="19" selection-start-line="19" selection-end-line="19" />
+            <state relative-caret-position="405">
+              <caret line="27" column="52" lean-forward="true" selection-start-line="27" selection-start-column="52" selection-end-line="27" selection-end-column="52" />
               <folding>
                 <element signature="e#0#43#0" expanded="true" />
               </folding>
@@ -106,10 +107,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="155">
-              <caret line="18" lean-forward="true" selection-start-line="22" selection-start-column="18" selection-end-line="23" selection-end-column="11" />
+            <state relative-caret-position="142">
+              <caret line="73" column="57" lean-forward="true" selection-start-line="73" selection-start-column="57" selection-end-line="73" selection-end-column="57" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
+                <marker date="1535577283518" expanded="true" signature="286:516" ph="..." />
+                <marker date="1535577283518" expanded="true" signature="621:702" ph="..." />
               </folding>
             </state>
           </provider>
@@ -127,6 +130,7 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>params</find>
+      <find>states</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -161,10 +165,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="53" />
-    <option name="y" value="132" />
-    <option name="width" value="1421" />
-    <option name="height" value="654" />
+    <option name="x" value="115" />
+    <option name="y" value="158" />
+    <option name="width" value="1411" />
+    <option name="height" value="661" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -412,6 +416,16 @@
     <entry file="file://$PROJECT_DIR$/markpy/gelman_rubin.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="405">
+          <caret line="27" column="52" lean-forward="true" selection-start-line="27" selection-start-column="52" selection-end-line="27" selection-end-column="52" />
+          <folding>
+            <element signature="e#0#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/markpy/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -422,32 +436,25 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="285">
-          <caret line="19" selection-start-line="19" selection-end-line="19" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1462">
-          <caret line="195" lean-forward="true" selection-start-line="195" selection-end-line="195" />
+        <state relative-caret-position="427">
+          <caret line="163" column="67" lean-forward="true" selection-start-line="163" selection-start-column="67" selection-end-line="163" selection-end-column="67" />
           <folding>
             <element signature="e#856#874#0" expanded="true" />
+            <marker date="1535577813519" expanded="true" signature="3307:3368" ph="..." />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="155">
-          <caret line="18" lean-forward="true" selection-start-line="22" selection-start-column="18" selection-end-line="23" selection-end-column="11" />
+        <state relative-caret-position="142">
+          <caret line="73" column="57" lean-forward="true" selection-start-line="73" selection-start-column="57" selection-end-line="73" selection-end-column="57" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
+            <marker date="1535577283518" expanded="true" signature="286:516" ph="..." />
+            <marker date="1535577283518" expanded="true" signature="621:702" ph="..." />
           </folding>
         </state>
       </provider>

@@ -42,7 +42,7 @@ class MarkChain(object):
         self.sigmaprop = sigprop
         self.model= PDF #Model object created for specific problem
         self.priorrange = priorrange
-        self.states = np.array([[self.oldsamp]]) #initialize our output
+        self.states =  [self.oldsamp] #initialize our output
 
 
 
@@ -52,7 +52,7 @@ class MarkChain(object):
         newsamp = self.proposedStep() #first we propose where we step next
         acc, newsamp = self.hastingsRatio(newsamp, *kargs) # compute the ratio and decide if we accept
 
-        self.states = np.append(self.states, [[newsamp]], axis=1) #add new value to our chain
+        self.states = np.append(self.states, [newsamp], axis=0) #add new value to our chain
         if acc: #if we accepted a new value update for our AR
             self.acc += 1
         self.oldsamp = newsamp #rese oldsamp variable for next iteration
@@ -85,6 +85,16 @@ class MarkChain(object):
     def AcceptenceRatio(self):
         #function return the acceptence ratio of the chain
         return 1.*self.acc/self.N
+
+    @property
+    def is_burned_in(self):
+        id, isb = self.burnin_nacl()
+        return isb
+
+    @property
+    def burn_idx(self):
+        id, isb = self.burnin_nacl()
+        return id
 
     def run(self, N, *kargs):
         #function called to run the chain, takes in N numbers of steps to run and *kargs which depend on The model we set up
@@ -120,9 +130,9 @@ class MarkChain(object):
         acls = {} #initialize acls as a dict
 
         for i in range(self.dim): #loop through all params
-            acl = compute_acl(self.states[0,:,i]) #compute for each param
+            acl = compute_acl(self.states[:,i]) #compute for each param
             if np.isinf(acl.any()): # if its inf then return the len of the chain
-                acl = len(self.states[0,:,i])
+                acl = len(self.states[:,i])
             acls[self.model.params[i]] = acl
         return acls #returns a dictionary with key values of names the params and values if acl for each param
 
@@ -130,30 +140,25 @@ class MarkChain(object):
         # function to check if the chain is burned in via the nacls route
         #default to nacls to 10. burned in if it has been thorugh max(acls)*nacls iterations in the chain. THis is always same for all params
 
-        acl = self.get_acl() # get acls
-        max_acl = 0
-        for i in range(self.dim): # find the max acl for all the params
-            if max_acl < np.max(acl[self.model.params[i]]):
-                max_acl = np.max(acl[self.model.params[i]])
-        burn_idx = nacls*max_acl
-        print(burn_idx)
-        print(len(self.states[0,:,0]))
-
-        is_burned_in = burn_idx < len(self.states[0,:,0]) #check if burned in
-        print(is_burned_in)
+        act = self.get_act()
+        burn_idx = nacls*act
+        is_burned_in = burn_idx < len(self.states[:,0]) #check if burned in
         #returns abn int with index of where we burn in at and bool if if we are burnt in or not with current input chain
-        return burn_idx, is_burned_in
+        return int(burn_idx), is_burned_in
 
     def get_burn_samps(self):
         # this function gets returns the states of the chain that are after the given burn_idx (cuts off the not burned in part)
         idx, isburn = self.burnin_nacl()
         if isburn:
             #return only burned in states
-            return self.states[:,::idx,:]
+            print(len(self.states[:,0]))
+            print(len(self.states[idx:,0]))
+            print(len(self.states[:,0]) - idx)
+            return self.states[idx:,:]
         else:
             #if not burned in print statement and return None
             print("CHAIN NOT BURNED IN - burnin")
-            return self.states[:,0,:]
+            return self.states[0,:]
 
     def get_independent_samps(self):
         #function that returns the independent samples of the chain
@@ -162,11 +167,13 @@ class MarkChain(object):
         burnid, isburned = self.burnin_nacl() #now get burned in to make sure we add the two
         if isburned: #if we are burned in return the correct samps
             corrleng = max(corrleng, burnid)
-            print(corrleng)
-            return self.states[:, ::corrleng, :]
+            print(len(self.states[:,0]))
+            print(len(self.states[corrleng:,0]))
+            print(len(self.states[:,0]) - corrleng)
+            return self.states[corrleng:,:]
         else: # otherwise print statement to tell user we are not burned in and return None
             print("CHIAN NOT BURNED IN - corrlen")
-            return self.states[:,0,:]
+            return self.states[0,:]
 
     def get_effective_AR(self):
         #function that uses the number of current independent samples to return the effective acceptence ratio of the chain
@@ -198,6 +205,9 @@ class MarkChain(object):
 
     def get_name(self):
         return self.name
+
+    def get_act(self):
+        return 2.0/self.AcceptenceRatio-1.0
 
 def compute_acl(samps):
     #global function that computes the auto-correlation length from an array of sampkles
