@@ -24,7 +24,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
 class MarkChain(object):
     '''
     MarkChain is an object of the markov chain we are sampling. all parameters stored in MarkChain.states
@@ -32,7 +31,7 @@ class MarkChain(object):
     proposed step sigma for our normally distributed randomwalk
 
     '''
-    def __init__(self, PDF, d, priorrange, sigprop, params):
+    def __init__(self, PDF, d, priorrange, sigprop):
         # initialize the first sample in correct data structure
         self.oldsamp = np.array([np.random.uniform(priorrange[i][0],priorrange[i][1]) for i in range(d)])
         self.acc = 0 #store how many accepted samples for AR
@@ -41,7 +40,7 @@ class MarkChain(object):
         self.model= PDF #Model object created for specific problem
         self.priorrange = priorrange
         self.states = np.array([[self.oldsamp]]) #initialize our output
-        self.params = params
+
 
     def step(self, *kargs):
         # this function performs the Metropolis-Hastings Algorthim stepping
@@ -176,7 +175,7 @@ class MarkChain(object):
         fig, axs = plt.subplots(nrows=3, ncols=1, sharex='col')
         for i in range(self.dim):
             ax = axs[i]
-            ax.plot(acls[self.params[i]])
+            ax.plot(acls[self.model.params[i]])
         plt.show()
 
     def get_corrlen(self):
@@ -185,7 +184,7 @@ class MarkChain(object):
         ct = 0
         cl = np.zeros([self.dim])
         for p in range(self.dim): #find when acl drops to less than 0.08 for each param
-            for i in acls[self.params[p]]:
+            for i in acls[self.model.params[p]]:
                 if i < 0.1:
                     cl[p] = ct
                 else:
@@ -210,45 +209,48 @@ class Model(object):
     takes in three different fcts, model, res, lik and prior to initilialize. These fcts can be grabbed from markpy or
     programmed in when using markpy
     """
-    def __init__(self, model, d, sig, D, res, lik, prior=1):
+    def __init__(self, model, d, sig, D, samp_params, liklie, static_params=None, prior=1):
         #this Model class has parameters:
         # model - the model function of the problem we want to sample
         # d is the data we are inferring from
         # sig is the sigma of the model,
         # D is the dimension of the model
-        # res is a function that calculates the residual,
-        # lik is a function that calculates the liklihood of the model
         # prior is set to uniform (prior =1) but we can adjust this if wantegitd
         self.data = d # data
         self.model = model # primary model using
         self.dim = D # dimension of model
         self.sig = sig # sigma of model
-        self.res = res # fct to calcuate the residual
-        self.lik = lik # likliehood fct
         self.prior = prior # prior fct (default to uniform prior=1)
+        self.liklie = liklie #variable to store if we use the default liklie or other
+        self.params = samp_params
+        self.static = static_params
 
     def get_posterior(self, samp, *kargs):
-        #function that returns the posterior for the model (used in sampling)
-        resid = self.res(self.data, self.model, samp, *kargs) #calc the resid with given fct
-        likliehood = self.lik(self.sig, 0.5, resid) # calc the likliehood
-        return self.prior*likliehood
+        return self.liklie._get_posterior(samp, *kargs)
 
 
-#function lists
-#function types, res has parameters:
-# data, model, samp. *kargs
 
-# lik_type has parameters:
-# sig, mean, res
+class Liklie_Base(object):
+    name = 'Base'
+
+    def __init__(self, model_func, data):
+        self.func = model_func
+        self.data = data
+
+    def _residual(self, samp, *kargs):
+        return (self.data-self.func(samp, *kargs))**2
 
 
-def res_norm(data, model, samp, *kargs):
-    # function of Res_type, normal
-    return (data - model(samp, *kargs))**2
+class Liklie_Norm(Liklie_Base):
+    name = 'Norm'
 
+    def __init__(self, model_func, sig, mean, data):
+        self.sig = sig
+        self.mean = mean
+        super(Liklie_Base, self).__init__(model_func, data)
 
-def liklie_norm(sig, mean, res):
-    # function of Lik_type, normal,
-    return np.exp(-mean*(res.sum()/sig**2))
+    def _get_posterior(self, samp, *kargs):
+        return np.exp(-self.mean*(self._residual(samp, *kargs).sum()/self.sig**2))
+
 
 

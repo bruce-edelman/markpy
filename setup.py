@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from os import path
 from io import open
-import versioneer
+import re
 
 here = path.abspath(path.dirname(__file__))
 
@@ -9,15 +9,17 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-# Arguments marked as "Required" below must be included for upload to PyPI.
-# Fields marked as "Optional" may be commented out.
+version_re = re.compile("__version__ = \"(.*?)\"")
+with open(path.join(path.dirname(path.abspath(__file__)), "markpy", "__init__.py")) as inp:
+    r = inp.read()
+version = version_re.findall(r)[0]
 
 
 # -- dependencies -------------------------------------------------------------
 setup(
 
     name='markpy',  # Required
-    version=__version__,  # Required
+    version=version,  # Required
     description='Python MCMC library',  # Required
     url='https://git.ligo.org/bruce.edelman/markpy',  # Optional
     author='Bruce Edelman',  # Optional

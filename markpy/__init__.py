@@ -1,6 +1,11 @@
 from markpy import sampler
-from ._version import get_versions
+from .sampler import *
+from .gelman_rubin import *
 
 __author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
 
 __version__ = '0.1.0'
+
+__likes__ = {cls.name: cls for cls in (
+    sampler.Liklie_Base, sampler.Liklie_Norm)
+}

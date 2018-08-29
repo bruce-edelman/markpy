@@ -24,10 +24,12 @@ def main():
     sig = 1
     D = 3
     t, data = get_data()
+    mean = 0.5
     params = ['Amp', 'Freq', 'Phase']
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi]])
-    test_model = mp.Model(model_exp, data, sig, D, mp.res_norm, mp.liklie_norm)
-    mc = mp.MarkChain(test_model, D, priorrange, sigprop, params)
+    liklie = mp.Liklie_Norm(model_exp, mean, sig, data)
+    test_model = mp.Model(model_exp, data, sig, D, params)
+    mc = mp.MarkChain(test_model, D, priorrange, sigprop)
     mc.run(Nsteps, data, t)
     plot_chains(mc.states)
     samps = mc.get_independent_samps()
