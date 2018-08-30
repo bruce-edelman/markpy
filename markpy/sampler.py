@@ -248,6 +248,9 @@ class Model(object):
     def get_posterior(self, samp, *kargs):
         return self.liklie._get_posterior(samp, *kargs)
 
+    def get_log_posterior(self, samp, *kargs):
+        return self.liklie._get_log_posterior(samp, *kargs)
+
     def get_name(self):
         return self.name
 
@@ -282,6 +285,9 @@ class Liklie_Norm(Liklie_Base):
 
     def _get_posterior(self, samp, *kargs):
         return np.exp(-self.mean*(self._residual(samp, *kargs).sum()/self.sig**2))
+
+    def _get_log_posterior(self, samp, *kargs):
+        return np.log(np.exp(-self.mean*(self._residual(samp,*kargs).sum()/self.sig**2)))
 
     def get_name(self):
         return self.name
