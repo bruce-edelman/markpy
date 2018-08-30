@@ -52,6 +52,7 @@ def main():
     plot_signal(mc, t, data)
 
 
+
 def plot_chains(chain):
     fig, axs = plt.subplots(nrows=3, ncols=2, sharex='col')
     ax = axs[0,0]
