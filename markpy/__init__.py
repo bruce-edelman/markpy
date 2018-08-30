@@ -1,6 +1,6 @@
 from markpy import sampler
 from .sampler import *
-from .gelman_rubin import *
+from .convergence_tests import *
 
 __author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
 

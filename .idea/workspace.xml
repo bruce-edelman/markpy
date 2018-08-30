@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a6aa105-2f75-4e23-ba47-6daea690ebd9" name="Default Changelist" comment="" />
+    <list default="true" id="2a6aa105-2f75-4e23-ba47-6daea690ebd9" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/markpy/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/markpy/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/markpy/gelman_rubin.py" beforeDir="false" afterPath="$PROJECT_DIR$/markpy/convergence_tests.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -12,15 +16,16 @@
     <session id="-1113219692">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="5" />
+          <entry key="project.closed" value="6" />
           <entry key="project.open.time.19" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.21" value="1" />
           <entry key="project.open.time.22" value="1" />
+          <entry key="project.open.time.23" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.4" value="3" />
           <entry key="project.open.time.9" value="1" />
-          <entry key="project.opened" value="9" />
+          <entry key="project.opened" value="10" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -40,15 +45,15 @@
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="cfg" value="133" />
-          <entry key="dummy" value="30" />
-          <entry key="py" value="18041" />
+          <entry key="dummy" value="48" />
+          <entry key="py" value="20401" />
           <entry key="versioneer" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="163" />
-          <entry key="Python" value="18042" />
+          <entry key="PLAIN_TEXT" value="181" />
+          <entry key="Python" value="20402" />
         </counts>
       </usages-collector>
     </session>
@@ -58,11 +63,14 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="105">
-              <caret line="22" column="18" lean-forward="true" selection-start-line="22" selection-start-column="18" selection-end-line="22" selection-end-column="18" />
+            <state relative-caret-position="1260">
+              <caret line="132" column="35" selection-start-line="132" selection-start-column="35" selection-end-line="132" selection-end-column="35" />
+              <folding>
+                <element signature="e#856#874#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -70,11 +78,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/setup.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="405">
-              <caret line="27" column="52" lean-forward="true" selection-start-line="27" selection-start-column="52" selection-end-line="27" selection-end-column="52" />
-              <folding>
-                <element signature="e#0#43#0" expanded="true" />
-              </folding>
+            <state>
+              <caret column="35" lean-forward="true" selection-start-column="35" selection-end-column="35" />
             </state>
           </provider>
         </entry>
@@ -91,16 +96,25 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/markpy/gelman_rubin.py">
-          <provider selected="true" editor-type-id="text-editor" />
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/markpy/convergence_tests.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="439">
+              <caret line="59" column="23" selection-start-line="59" selection-start-column="23" selection-end-line="59" selection-end-column="23" />
+              <folding>
+                <marker date="1535659287931" expanded="true" signature="1206:1207" ph="..." />
+                <marker date="1535659287931" expanded="true" signature="1206:1212" ph="..." />
+                <marker date="1535659287931" expanded="true" signature="2550:2554" ph="..." />
+              </folding>
+            </state>
+          </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="780">
-              <caret line="52" lean-forward="true" selection-start-line="52" selection-end-line="52" />
+            <state relative-caret-position="409">
+              <caret line="102" column="10" lean-forward="true" selection-start-line="102" selection-start-column="10" selection-end-line="102" selection-end-column="10" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -147,10 +161,11 @@
         <option value="$PROJECT_DIR$/markpy/examples/example.py" />
         <option value="$PROJECT_DIR$/markpy/io/io.py" />
         <option value="$PROJECT_DIR$/setup.py" />
+        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/markpy/gelman_rubin.py" />
         <option value="$PROJECT_DIR$/markpy/__init__.py" />
-        <option value="$PROJECT_DIR$/test.py" />
         <option value="$PROJECT_DIR$/markpy/sampler.py" />
+        <option value="$PROJECT_DIR$/markpy/convergence_tests.py" />
       </list>
     </option>
   </component>
@@ -173,6 +188,11 @@
             <path>
               <item name="markpy" type="b2602c69:ProjectViewProjectNode" />
               <item name="markPy" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="markpy" type="b2602c69:ProjectViewProjectNode" />
+              <item name="markPy" type="462c0819:PsiDirectoryNode" />
+              <item name="markpy" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -328,19 +348,20 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="27" width="1600" height="873" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8354898" visible="true" weight="0.32994923" />
-      <window_info id="Structure" order="1" sideWeight="0.16451016" side_tool="true" visible="true" weight="0.32994923" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.8333333" visible="true" weight="0.18591371" />
+      <window_info id="Structure" order="1" sideWeight="0.16666667" side_tool="true" visible="true" weight="0.18591371" />
       <window_info id="Favorites" order="2" sideWeight="0.34081632" side_tool="true" weight="0.32994923" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32968536" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49936548" visible="true" weight="0.25718194" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49936548" weight="0.25718194" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.0752394" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.49809644" weight="0.3292517" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Terminal" order="8" sideWeight="0.49873096" weight="0.2599179" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="8" sideWeight="0.49873096" visible="true" weight="0.2612859" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5006345" side_tool="true" weight="0.25718194" />
       <window_info anchor="bottom" id="Python Console" order="10" sideWeight="0.49936548" weight="0.32968536" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -402,19 +423,6 @@
     <entry file="file://$PROJECT_DIR$/versioneer.py" />
     <entry file="file://$PROJECT_DIR$/_version.py" />
     <entry file="file://$PROJECT_DIR$/MANIFEST.in" />
-    <entry file="file://$PROJECT_DIR$/markpy/gelman_rubin.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="405">
-          <caret line="27" column="52" lean-forward="true" selection-start-line="27" selection-start-column="52" selection-end-line="27" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#43#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/markpy/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="165">
@@ -425,19 +433,41 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
+    <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="105">
-          <caret line="22" column="18" lean-forward="true" selection-start-line="22" selection-start-column="18" selection-end-line="22" selection-end-column="18" />
+        <state relative-caret-position="409">
+          <caret line="102" column="10" lean-forward="true" selection-start-line="102" selection-start-column="10" selection-end-line="102" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
+    <entry file="file://$PROJECT_DIR$/setup.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="780">
-          <caret line="52" lean-forward="true" selection-start-line="52" selection-end-line="52" />
+        <state>
+          <caret column="35" lean-forward="true" selection-start-column="35" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1260">
+          <caret line="132" column="35" selection-start-line="132" selection-start-column="35" selection-end-line="132" selection-end-column="35" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#856#874#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/markpy/convergence_tests.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="439">
+          <caret line="59" column="23" selection-start-line="59" selection-start-column="23" selection-end-line="59" selection-end-column="23" />
+          <folding>
+            <marker date="1535659287931" expanded="true" signature="1206:1207" ph="..." />
+            <marker date="1535659287931" expanded="true" signature="1206:1212" ph="..." />
+            <marker date="1535659287931" expanded="true" signature="2550:2554" ph="..." />
           </folding>
         </state>
       </provider>
