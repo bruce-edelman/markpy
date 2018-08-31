@@ -63,10 +63,10 @@ class MarkChain(object):
         # the inner array is of shape (ndim)
         self.states = [self.oldsamp] # initialize our output
 
-    def step_mh(self, *kargs):
+    def step_mh(self, *args):
         """
         This function performs the Metropolis-Hastings algorithm step.
-        :param kargs: This are other args that are passed to the Model function used in the HastingsRatio func
+        :param args: This are other args that are passed to the Model function used in the HastingsRatio func
         :return: This function does not return anything just updates the chain attribute of states and acc
         """
 
@@ -74,7 +74,7 @@ class MarkChain(object):
         newsamp = self.proposedStep()
 
         # now we use the hastingsRatio function to decide if we accept this proposed step and update samps
-        acc, newsamp = self.hastingsRatio(newsamp, *kargs)
+        acc, newsamp = self.hastingsRatio(newsamp, *args)
 
         # now we append the states with newsamp, if it was accepted newsamp is different than oldsamp, if not
         # it is the same as self.oldsamp
@@ -148,7 +148,7 @@ class MarkChain(object):
         :return: this returns a bool that tells us if the chain is currently burned in. Thiis checks the burnin based on
         the nacl burnin routine later defined in this class methods.
         """
-        __, isb = self.burnin_nacl()
+        __, isb = self.burnin_nact()
         return isb
 
     @property
@@ -161,22 +161,22 @@ class MarkChain(object):
         # check to see if it is burned in
         if self.is_burned_in:
             # if it is return the burn idx as expected
-            id, __ = self.burnin_nacl()
+            id, __ = self.burnin_nact()
             return id
         else:
             # if it is not burned in let the user know and return the last index of the chain
             print("Chain is not burned in: Run for more iterations")
             return self.N
 
-    def run(self, N, *kargs):
+    def run(self, N, *args):
         """
         This function is responsible for actually runnning the chain for however many steps:
         :param N: This is how many interations we run the chain for
-        :param kargs: this is needed to pass for the PDF model Class later in stepping forward
+        :param args: this is needed to pass for the PDF model Class later in stepping forward
         :return: this returns nothing
         """
         # function called to run the chain, takes in N numbers of steps to run and
-        # *kargs which depend on The model we set up
+        # *args which depend on The model we set up
         # TODO: maybe figure a way to move this self.N def into __init__ but that will require some reworking of structure
         self.N = N
 
@@ -184,15 +184,15 @@ class MarkChain(object):
         # TODO: maybe add a submodule that holds classes of steppers (MH, KDE, etc) and there we can add different types
         # TODO: of moves rather than only the metropolis hastings stepper
         for i in range(N):
-            self.step_mh(*kargs)
+            self.step_mh(*args)
         return None
 
-    def hastingsRatio(self, newsamp, *kargs):
+    def hastingsRatio(self, newsamp, *args):
         """
         This function calcualtes the hastings ratio of our proposed new sample and decides whether to accept that sample
         or reject it
         :param newsamp: this is an array of shape (ndim) that is the proposed step we are deciding to accept or not
-        :param kargs: these args are needed to calculate the Model Class get_posterior fcts
+        :param args: these args are needed to calculate the Model Class get_posterior fcts
         :return: this returns a bool acc that tells us if we accepted the sample or not and also the sample that we
         chose to accept or the oldsample if we rejected the new one
         """
@@ -206,8 +206,8 @@ class MarkChain(object):
 
         # now we know we are accepting with at least some prob so we need probabilities calculated through our Model
         # class and some the functions we created it with
-        newp = self.model.get_posterior(newsamp, *kargs)
-        oldp = self.model.get_posterior(self.oldsamp, *kargs)
+        newp = self.model.get_posterior(newsamp, *args)
+        oldp = self.model.get_posterior(self.oldsamp, *args)
 
         if newp >= oldp:
             # if new step is more prob than old we accept immediately and return the new samp
@@ -257,7 +257,7 @@ class MarkChain(object):
         burn_idx = nacls * max_acl
 
         # check if burned in
-        is_burned_in = burn_idx < len(self.states[0, :, 0])
+        is_burned_in = burn_idx < len(self.states[:, 0])
         # returns abn int with index of where we burn in at and bool if if we are burnt in or not with current
         # input chain
         return int(burn_idx), is_burned_in
@@ -439,25 +439,25 @@ class Model(object):
         if self.dim != len(self.params):
             print("ERROR: Dimension must be equal to the number of sampling parameters:")
 
-    def get_posterior(self, samp, *kargs):
-        return self.liklie._get_posterior(samp, *kargs)
+    def get_posterior(self, samp, *args):
+        return self.liklie._get_posterior(samp, *args)
 
-    def get_log_posterior(self, samp, *kargs):
-        return self.liklie._get_log_posterior(samp, *kargs)
+    def get_log_posterior(self, samp, *args):
+        return self.liklie._get_log_posterior(samp, *args)
 
     def get_name(self):
         return self.name
 
 
-class Liklie_Base(object):
+class LiklieBase(object):
     name = 'Base-Liklie'
 
     def __init__(self, model_func, data):
         self.func = model_func
         self.data = data
 
-    def _residual(self, samp, *kargs):
-        return (self.data-self.func(samp, *kargs))**2
+    def _residual(self, samp, *args):
+        return (self.data-self.func(samp, *args))**2
 
     def lnprob(self):
         return
@@ -469,19 +469,19 @@ class Liklie_Base(object):
         return self.name
 
 
-class Liklie_Norm(Liklie_Base):
+class LiklieNorm(LiklieBase):
     name = 'Norm-Liklie'
 
     def __init__(self, model_func, sig, mean, data):
         self.sig = sig
         self.mean = mean
-        super(Liklie_Norm, self).__init__(model_func, data)
+        super(LiklieNorm, self).__init__(model_func, data)
 
-    def _get_posterior(self, samp, *kargs):
-        return np.exp(-self.mean*(self._residual(samp, *kargs).sum()/self.sig**2))
+    def _get_posterior(self, samp, *args):
+        return np.exp(-self.mean*(self._residual(samp, *args).sum()/self.sig**2))
 
-    def _get_log_posterior(self, samp, *kargs):
-        return np.log(np.exp(-self.mean*(self._residual(samp,*kargs).sum()/self.sig**2)))
+    def _get_log_posterior(self, samp, *args):
+        return np.log(np.exp(-self.mean*(self._residual(samp,*args).sum()/self.sig**2)))
 
     def get_name(self):
         return self.name

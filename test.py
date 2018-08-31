@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import markpy.sampler as mp
+import markpy as mp
 
 """
 This is a python file that tests the markpy sampler on some simple problems one is 3-dimesnional and one is 6-dimensional
@@ -94,7 +94,7 @@ def main():
     # np.random.seed(10)
 
     # intialize some parameters about the mcmc
-    Nsteps = 10000 # iterations to use in the chain
+    Nsteps = 100000 # iterations to use in the chain
     sigprop = 0.11 # the std dev sigma to use when proposing the new normally distributed Metropolis-Hastings Step
     sig = 1 # prior std deviation
     D = 6 # dimensionality of the problem
@@ -108,7 +108,7 @@ def main():
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi],[0,5],[0,np.pi],[0,np.pi]])
 
     # Here we setup the Model/Liklie class for our problem with given parameters set above
-    liklie = mp.Liklie_Norm(model_two, mean, sig, data)
+    liklie = mp.LiklieNorm(model_two, mean, sig, data)
     test_model = mp.Model(model_two, data, sig, D, params, liklie)
 
     # now using the setup model we can create the chain using the mp.MarkChain class
