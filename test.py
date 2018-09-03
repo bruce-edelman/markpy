@@ -109,7 +109,7 @@ def main():
 
     # Here we setup the Model/Liklie class for our problem with given parameters set above
     liklie = mp.LiklieNorm(model_two, mean, sig, data)
-    test_model = mp.Model(model_two, data, sig, D, params, liklie)
+    test_model = mp.BaseModel(model_two, data, sig, D, params, liklie)
 
     # now using the setup model we can create the chain using the mp.MarkChain class
     mc = mp.MarkChain(test_model, D, priorrange, sigprop)

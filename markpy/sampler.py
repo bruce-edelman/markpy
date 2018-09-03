@@ -29,7 +29,6 @@ class MarkChain(object):
     MarkChain is an object of the markov chain we are sampling. all parameters stored in MarkChain.states
     takes in a an object of the Model class as PDF, d is the dimension of our model, ranges for all parameters and
     proposed step sigma for our normally distributed randomwalk
-
     '''
 
     name = 'Metropolis-Hastings Chain'
@@ -402,7 +401,7 @@ class MarkChain(object):
         return 2.0/self.AcceptenceRatio-1.0
 
 
-class Model(object):
+class BaseModel(object):
     """"
     Model Class will soon get combined with the Liklie classes. Want to create a BaseModel Class, then create the other
     models overtop that. (always require data? maybe?) other classes will be maybe class NormModel(Model): or
@@ -412,22 +411,24 @@ class Model(object):
 
     def __init__(self, model, d, sig, D, samp_params, liklie, static_params=None, prior=1):
         """
-
-        :param model:
-        :param d:
-        :param sig:
-        :param D:
-        :param samp_params:
-        :param liklie:
-        :param static_params:
-        :param prior:
+        This is the initialization of the BaseModel class. This class will the be the base class that we generate our
+        model (likliehood) objects out of. This model will require data. They will be subclasses of this Base Model
+        Class to be used in our MarkChain objects.
+        :param model: This is a function of the distribution we want to sample
+        :param d: this is the observed data we inferring from
+        :param sig: this is the sigma of our model #TODO: this may need switched to our NormModel(BaseModel): class
+        :param D: this is the dimensionality of the problem or len(sampling_params)
+        :param samp_params: this is a list of the names of each of the parameters we are sampling
+        :param liklie: #TODO: THIS IS AN OUTDATED PARAMETER NEEDS REMOVED
+        :param static_params: optional variable to add in static_params where we wont sample in (don't add
+        to the dimensionality of our problem)
+        :param prior: This is the prior to be used. #TODO: right now this will only work for the default uniform
+        #TODO: prior = 1 for each parameter. i.e. Postulate of equal a-prior probabilities:
+        #TODO: need to figure out a more elegant way of adding option of specifying the prior for each sampling parameter
+        #TODO: individually
         """
-        #this Model class has parameters:
-        # model - the model function of the problem we want to sample
-        # d is the data we are inferring from
-        # sig is the sigma of the model,
-        # D is the dimension of the model
-        # prior is set to uniform (prior =1) but we can adjust this if wantegitd
+
+        # Initialize our instance attributes of the BaseModel class
         self.data = d # data
         self.model = model # primary model using
         self.dim = D # dimension of model
@@ -436,6 +437,8 @@ class Model(object):
         self.liklie = liklie #variable to store if we use the default liklie or other
         self.params = samp_params
         self.static = static_params
+
+        # Error check to make sure len(self.param) is same asa self.dim
         if self.dim != len(self.params):
             print("ERROR: Dimension must be equal to the number of sampling parameters:")
 
