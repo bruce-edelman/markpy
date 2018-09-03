@@ -1,4 +1,3 @@
-
 # Copyright (C) 2018  Bruce Edelman
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -23,6 +22,9 @@ markPy is a python package developed by Bruce Edelman to implement MCMC sampling
 import numpy as np
 import matplotlib.pyplot as plt
 
+"""
+This file Sets up the MarkChain object, used as our sampler in markpy
+"""
 
 class MarkChain(object):
     '''
