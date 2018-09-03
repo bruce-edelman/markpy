@@ -18,15 +18,10 @@
 markPy is a python package developed by Bruce Edelman to implement MCMC sampling among other things
 """
 
-from .sampler import *
-from .convergence_tests import *
-from .models import *
-from .corner_plot import *
+import corner
+import numpy as np
 
-__author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
-
-__version__ = '0.1.0'
-
-__likes__ = {cls.name: cls for cls in (
-    sampler.LiklieBase, sampler.LiklieNorm)
-}
+"""
+This file provides some functions to use the corner python package to plot convenient looking plots
+comparing the posterior samples distributions  
+"""

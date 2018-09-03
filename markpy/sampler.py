@@ -162,14 +162,14 @@ class MarkChain(object):
         # check to see if it is burned in
         if self.is_burned_in:
             # if it is return the burn idx as expected
-            id, __ = self.burnin_nact()
-            return id
+            idx, __ = self.burnin_nact()
+            return idx
         else:
             # if it is not burned in let the user know and return the last index of the chain
             print("Chain is not burned in: Run for more iterations")
             return self.N
 
-    def run(self, N, *args):
+    def run(self, n, *args):
         """
         This function is responsible for actually runnning the chain for however many steps:
         :param N: This is how many interations we run the chain for
@@ -179,12 +179,12 @@ class MarkChain(object):
         # function called to run the chain, takes in N numbers of steps to run and
         # *args which depend on The model we set up
         # TODO: maybe figure a way to move this self.N def into __init__ but that will require some reworking of structure
-        self.N = N
+        self.N = n
 
         # now we use the step_mh method to step the chain forward N steps
         # TODO: maybe add a submodule that holds classes of steppers (MH, KDE, etc) and there we can add different types
         # TODO: of moves rather than only the metropolis hastings stepper
-        for i in range(N):
+        for i in range(n):
             self.step_mh(*args)
         return None
 
@@ -198,10 +198,11 @@ class MarkChain(object):
         chose to accept or the oldsample if we rejected the new one
         """
         # function calculates the hastings ratio and decides to accept or reject proposed step
-        # this is the rejection criterion in the hastings ratio
+        # Check to make sure the proposed sample is still in the allowed range according to the priorrange array
         if not ((np.array([p1-p2 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][0])]) > 0).all()
                 and (np.array([p2-p1 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][1])]) > 0).all()):
-            # set acc to False and return the old sample
+            # if newsamp is not in the allowed prior range we set accept to False and return the oldsamp instead of the
+            # newsamp
             acc = False
             return acc, self.oldsamp
 

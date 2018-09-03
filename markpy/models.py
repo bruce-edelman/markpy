@@ -68,13 +68,23 @@ class BaseModel(object):
             print("ERROR: Dimension must be equal to the number of sampling parameters:")
 
     def get_posterior(self, samp, *args):
-        return self.liklie._get_posterior(samp, *args)
+        if self.prior != 1:
+            return self.liklie._get_posterior(samp, *args)*self.prior
+        else:
+            return self.liklie._get_posterior(samp, *args)
 
     def get_log_posterior(self, samp, *args):
-        return self.liklie._get_log_posterior(samp, *args)
+        if self.prior != 1:
+            return self.liklie._get_log_posterior(samp, *args) + self.get_log_prior()
+        else:
+            return  self.liklie._get_log_posterior(samp, *args)
 
     def get_name(self):
         return self.name
+
+    @property
+    def get_log_prior(self):
+        return np.log(self.prior)
 
 
 class LiklieBase(object):
