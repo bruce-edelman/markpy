@@ -20,8 +20,36 @@ markPy is a python package developed by Bruce Edelman to implement MCMC sampling
 
 import corner
 import numpy as np
+import matplotlib.pyplot as plt
 
 """
 This file provides some functions to use the corner python package to plot convenient looking plots
 comparing the posterior samples distributions  
 """
+
+def corner_plot(chain, params):
+    """
+    this function plots the corner plot for visualizeing the chain. It does so by taking the average of all chains if
+    multiple are given
+    :param chain: this is the chain.states data structure of shape (niter, ndim, nchains)
+    :param params: this is a list of sampling params present in the chain
+    :return: returns nothing, just plots the figure and saves it as a .png file
+    """
+
+    # get shape of chain
+    niter, ndim, nchains = chain.shape
+
+    # initialize data for corner plots
+    data = np.zeros([ndim, niter])
+
+    # get the mean of each chain
+    for i in range(ndim):
+        for j in range(niter):
+            data[i,j] = np.mean(chain[j,i,:])
+
+    # generate the plot and save it
+    fig1, ax = plt.figure()
+    figure = corner.corner(data, labels=params, show_titles=True, title_kwargs={"fontsize": 12}, fig=fig1)
+    plt.savefig('corner_plot_%s-D.png' % ndim)
+
+    return None
