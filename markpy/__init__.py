@@ -28,5 +28,6 @@ __author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
 __version__ = '0.1.0'
 
 __likes__ = {cls.name: cls for cls in (
-    sampler.LiklieBase, sampler.LiklieNorm)
+    models.NormModelInfer, models.RosenbrockAnalytic, models.BaseModel,
+    models.EggBoxAnalytic, models.NormModelAnalytic, models.BaseInferModel)
 }

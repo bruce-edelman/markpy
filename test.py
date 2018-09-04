@@ -23,6 +23,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import markpy as mp
 
+
 """
 This is a python file that tests the markpy sampler on some simple problems one is 3-dimesnional and one is 6-dimensional
 
@@ -111,16 +112,16 @@ def main():
     :return: has no return
     """
 
+
     # optionally can choose a seed for deterministic results
     # np.random.seed(10)
 
     # intialize some parameters about the mcmc
     Nsteps = 100000 # iterations to use in the chain
-    sigprop = 0.11 # the std dev sigma to use when proposing the new normally distributed Metropolis-Hastings Step
+    sigprop = 0.09 # the std dev sigma to use when proposing the new normally distributed Metropolis-Hastings Step
     sig = 1 # prior std deviation
-    D = 6 # dimensionality of the problem
     t, data = get_data_two() # get the data from on of the built in functions
-    mean = 0.5 # mean of the prior
+
 
     # list to store the names of each of the problem parameters that we sample in
     params = ['Amp', 'Freq', 'Phase', 'Amp2', 'Freq2', 'Phase2']
@@ -129,11 +130,12 @@ def main():
     priorrange = np.array([[0,5],[0,np.pi],[0,np.pi],[0,5],[0,np.pi],[0,np.pi]])
 
     # Here we setup the Model/Liklie class for our problem with given parameters set above
-    liklie = mp.LiklieNorm(model_two, mean, sig, data)
-    test_model = mp.BaseModel(model_two, data, sig, D, params, liklie)
+    #liklie = mp.LiklieNorm(model_two, mean, sig, data)
+    #test_model = mp.BaseModel(model_two, data, sig, D, params, liklie)
 
+    test_model = mp.NormModelInfer(sig, model_two, data, params)
     # now using the setup model we can create the chain using the mp.MarkChain class
-    mc = mp.MarkChain(test_model, D, priorrange, sigprop)
+    mc = mp.MarkChain(test_model, len(params), priorrange, sigprop)
 
     # now we run the chain for Nsteps iterations
     mc.run(Nsteps, data, t)

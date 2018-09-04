@@ -167,7 +167,7 @@ class MarkChain(object):
         else:
             # if it is not burned in let the user know and return the last index of the chain
             print("Chain is not burned in: Run for more iterations")
-            return self.N
+            return len(self.states[:,0])
 
     def run(self, n, *args):
         """
@@ -217,7 +217,7 @@ class MarkChain(object):
             return acc, newsamp
         else:
             # oldp is bigger so we only accept the step probablistically as in MH algo
-            prob = newp/oldp
+            prob = newp[0]/oldp[0]
             acc = np.random.choice([True, False], p=[prob, 1.-prob])
             return acc, acc*newsamp + (1. - acc)*self.oldsamp
 
@@ -297,8 +297,8 @@ class MarkChain(object):
             return self.states[idx:,:]
         else:
             #if not burned in print statement and return None
-            print("CHAIN NOT BURNED IN - burnin")
-            return self.states[0,:]
+            raise ValueError("CHAIN NOT BURNED IN - burnin")
+
 
     def get_independent_samps(self):
         """
@@ -321,8 +321,8 @@ class MarkChain(object):
             return self.states[corrleng:, :]
         else:
             # otherwise print statement to tell user we are not burned in and return None
-            print("CHIAN NOT BURNED IN - corrlen")
-            return None
+            raise ValueError("CHIAN NOT BURNED IN - corrlen")
+
 
     def get_effective_AR(self):
         """
@@ -402,95 +402,6 @@ class MarkChain(object):
         :return: returns the act for the chain based of its current accpetence ratio
         """
         return 2.0/self.AcceptenceRatio-1.0
-
-
-class BaseModel(object):
-    """"
-    Model Class will soon get combined with the Liklie classes. Want to create a BaseModel Class, then create the other
-    models overtop that. (always require data? maybe?) other classes will be maybe class NormModel(Model): or
-    class RosenbachModel(Model): for example.
-    """
-    name = 'Base-Model'
-
-    def __init__(self, model, d, sig, D, samp_params, liklie, static_params=None, prior=1):
-        """
-        This is the initialization of the BaseModel class. This class will the be the base class that we generate our
-        model (likliehood) objects out of. This model will require data. They will be subclasses of this Base Model
-        Class to be used in our MarkChain objects.
-        :param model: This is a function of the distribution we want to sample
-        :param d: this is the observed data we inferring from
-        :param sig: this is the sigma of our model #TODO: this may need switched to our NormModel(BaseModel): class
-        :param D: this is the dimensionality of the problem or len(sampling_params)
-        :param samp_params: this is a list of the names of each of the parameters we are sampling
-        :param liklie: #TODO: THIS IS AN OUTDATED PARAMETER NEEDS REMOVED
-        :param static_params: optional variable to add in static_params where we wont sample in (don't add
-        to the dimensionality of our problem)
-        :param prior: This is the prior to be used. #TODO: right now this will only work for the default uniform
-        #TODO: prior = 1 for each parameter. i.e. Postulate of equal a-prior probabilities:
-        #TODO: need to figure out a more elegant way of adding option of specifying the prior for each sampling parameter
-        #TODO: individually
-        """
-
-        # Initialize our instance attributes of the BaseModel class
-        self.data = d # data
-        self.model = model # primary model using
-        self.dim = D # dimension of model
-        self.sig = sig # sigma of model
-        self.prior = prior # prior fct (default to uniform prior=1)
-        self.liklie = liklie #variable to store if we use the default liklie or other
-        self.params = samp_params
-        self.static = static_params
-
-        # Error check to make sure len(self.param) is same asa self.dim
-        if self.dim != len(self.params):
-            print("ERROR: Dimension must be equal to the number of sampling parameters:")
-
-    def get_posterior(self, samp, *args):
-        return self.liklie._get_posterior(samp, *args)
-
-    def get_log_posterior(self, samp, *args):
-        return self.liklie._get_log_posterior(samp, *args)
-
-    def get_name(self):
-        return self.name
-
-
-class LiklieBase(object):
-    name = 'Base-Liklie'
-
-    def __init__(self, model_func, data):
-        self.func = model_func
-        self.data = data
-
-    def _residual(self, samp, *args):
-        return (self.data-self.func(samp, *args))**2
-
-    def lnprob(self):
-        return
-
-    def lnpost(self):
-        return
-
-    def get_name(self):
-        return self.name
-
-
-class LiklieNorm(LiklieBase):
-    name = 'Norm-Liklie'
-
-    def __init__(self, model_func, sig, mean, data):
-        self.sig = sig
-        self.mean = mean
-        super(LiklieNorm, self).__init__(model_func, data)
-
-    def _get_posterior(self, samp, *args):
-        return np.exp(-self.mean*(self._residual(samp, *args).sum()/self.sig**2))
-
-    def _get_log_posterior(self, samp, *args):
-        return np.log(np.exp(-self.mean*(self._residual(samp,*args).sum()/self.sig**2)))
-
-    def get_name(self):
-        return self.name
 
 
 def compute_acl(samps):
