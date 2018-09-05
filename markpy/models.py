@@ -244,58 +244,158 @@ class NormModelInfer(BaseInferModel):
         super(NormModelInfer, self).__init__(model_func, data, samp_params,**kwargs)
 
     def get_log_lik(self, samp, *args):
+        """
+        this method returns the log liklikehood for the normal gaussian noise model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the log likliehood with gaussian noise
+        """
         return  np.log(np.exp(-0.5*(self._residual(samp,*args).sum()/self.sig**2)))
 
     def get_lik(self, samp, *args):
+        """
+        this method returns the liklikehood for the normal gaussian noise model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the likliehood with gaussian noise
+        """
         return np.exp(-0.5*(self._residual(samp,*args).sum()/self.sig**2))
 
 class NormModelAnalytic(BaseModel):
+    """
+    This is a child class of parent BaseModel that assumes a normally disytributed likliehood and is analyitic,
+    i.e. does not use any data
+    """
     name = "NormModelAnalytic"
 
     def __init__(self,samp_params, sig=None, mean=None, **kwargs):
+        """
+        the initialization function for the analytic normal model This can optionally take an array of length (ndim)
+        with the sigma or mean of each parameter in the array or if None is provided will default to mean=0 for each
+        param and sigma = 1 for each
+        :param samp_params: this is a list of the parameters we sample in
+        :param sig: This is optional array of len(ndim) that stores the sigma for each parameter, defaults to 1 for each
+        paramter if not given
+        :param mean: Same as sig but storing the mean for each parameter, defaults to 0 for each if not given
+        :param kwargs: this is the possible passed stat_params dict and also logprior which will be defaulted
+        as shown in the BaseModel class if not given
+        """
+
+        # if no sigma is given set up the default array
         if sig is None:
             sig = [1.]*self.dim
         self.sig = sig
+
+        # if no mean is given set up the default array
         if mean is None:
             mean = [0.]*self.dim
         self.mean = mean
+
+        # inherit the __init__ function from the parent class (BaseModel) and use the samp_params value and possible
+        # **kwargs as in the other class definitions in this file
         super(NormModelAnalytic, self).__init__(samp_params,**kwargs)
+
+        # error check to make sure that the given arrays for sig and mean are both the right length
         if len(self.mean) != self.dim or len(self.sig) != self.dim:
             raise ValueError("Dimension of sig and mean must match len(samp_params)")
+
+        # setup the distribution using the scipy.stats.multivariate_normal fct
         self.distribution = st.multivariate_normal(mean=mean, cov=sig)
 
     def get_log_lik(self, samp, *args):
+        """
+        this method returns the log liklikehood for the normal analytic model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the log likliehood of the normal model
+        """
         return self.distribution.logpdf(samp)
 
     def get_lik(self, samp, *args):
+        """
+        this method returns the liklikehood for the normal analytic model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the likliehood of the normal model
+        """
         return self.distribution.pdf(samp)
 
 class EggBoxAnalytic(BaseModel):
+    """
+    This is a child class from parent BaseModel that provides an analytical likliehood function for the EggBox model
+    """
     name = "EggBoxAnalytic"
 
     def __init__(self, samp_params, **kwargs):
+        """
+        This is the intialization of the analytical eggBox model
+        :param samp_params: list of the the sampling parameters
+        :param kwargs: this is the possible passed stat_params dict and also logprior which will be defaulted
+        as shown in the BaseModel class if not given
+        """
+
+        # inherit the __init__ function from the parent class (BaseModel) and use the samp_params value and possible
+        # **kwargs as in the other class definitions in this file
         super(EggBoxAnalytic, self).__init__(samp_params, **kwargs)
 
     def get_lik(self, samp, *args):
+        """
+        this method returns the liklikehood for the EggBox analytic model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the likliehood of the EggBox model
+        """
         return np.exp((2 + np.prod(np.cos(samp)))**5)
 
     def get_log_lik(self, samp, *args):
+        """
+        this method returns the log liklikehood for the EggBox analytic model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the log likliehood of the EggBox model
+        """
         return (2 + np.prod(np.cos(samp)))**5
 
 class RosenbrockAnalytic(BaseModel):
+    """
+    This is a child class from parent BaseModel that provides an analytical likliehood function for the Rosenbrock model
+    """
     name = "RosenbrockAnalyitc"
 
     def __init__(self, samp_parms, **kwargs):
+        """
+        This is the intialization of the analytical Rosenbrock model
+        :param samp_params: list of the the sampling parameters
+        :param kwargs: this is the possible passed stat_params dict and also logprior which will be defaulted
+        as shown in the BaseModel class if not given
+        """
+
+        # inherit the __init__ function from the parent class (BaseModel) and use the samp_params value and possible
+        # **kwargs as in the other class definitions in this file
         super(RosenbrockAnalytic, self).__init__(samp_parms, **kwargs)
 
     def get_log_lik(self, samp, *args):
+        """
+        this method returns the log liklikehood for the Rosenbrock analytic model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the log likliehood of the Rosenbrock model
+        """
         log_like = 0
         for i in range(len(samp)-1):
             log_like -= ((1-samp[i])**2 + 100 *(samp[i+1]-samp[i]**2)**2)
         return log_like
 
     def get_lik(self, samp, *args):
+        """
+        this method returns the liklikehood for the Rosenrbock analytic model
+        :param samp: this is the current sample or point the chain is in parameter space
+        :param args: these are optional other args that model_func may need
+        :return: it returns the likliehood of the Rosenbrock model
+        """
         return np.exp(self.get_log_lik(samp, *args))
+
+
 
 
 
