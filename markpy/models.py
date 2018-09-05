@@ -395,7 +395,41 @@ class RosenbrockAnalytic(BaseModel):
         """
         return np.exp(self.get_log_lik(samp, *args))
 
+class ModelGenericAnalytic(BaseModel):
+    """
+    This is a child class of parent BaseModel in which will let the user easily setup their own posterior fct to sample
+    that does not use data
+    """
+    name = 'ModelGenericAnalytic'
 
+    def __init__(self, logpdf, samp_params, *args, **kwargs):
+        """
+        This is intialization function of the ModelGenericAnalytic class that will easily let the user of markpy setup a generic
+        and generally usable model in markpy
+        :param logpdf: fct to return the log pdf of whatever at
+        :param samp_params: list of the name of sampling params, dimension = len(samp_params)
+        :param args: arguments needed for logpdf function
+        :param kwargs: other arguments needed in BaseModel such as static_params dict
+        """
+        self.logpdf = logpdf
+        self.args = []
+        self.args.append([i for i in args])
+        super(ModelGenericAnalytic, self).__init__(samp_params, **kwargs)
 
+    def get_log_lik(self, samp, *args):
+        """
+        this method returns the log liklikehood for the ModelGenericAnalytic
+        :param samp: this is the current sample or point the chain is in parameter space
+        :return: it returns the log likliehood of the normal model
+        """
+        return self.logpdf(samp, self.args)
+
+    def get_lik(self, samp, *args):
+        """
+        this method returns the liklikehood for the ModelGenericAnalytic
+        :param samp: this is the current sample or point the chain is in parameter space
+        :return: it returns the likliehood of the normal model
+        """
+        return np.exp(self.logpdf(samp, self.args))
 
 
