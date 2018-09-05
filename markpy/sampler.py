@@ -27,15 +27,13 @@ This file Sets up the MarkChain object, used as our sampler in markpy
 """
 
 class MarkChain(object):
-    '''
+    """
     MarkChain is an object of the markov chain we are sampling. all parameters stored in MarkChain.states
     takes in a an object of the Model class as PDF, d is the dimension of our model, ranges for all parameters and
     proposed step sigma for our normally distributed randomwalk
-    '''
+    """
 
     name = 'Metropolis-Hastings Chain'
-    # TODO: we need to add is so we have another parameter: nwalkers which is the number of independent chains we
-    # TODO: need to run for each sampling parameter -  we need to add it so self.states has shape (niter,ndim,nwalkers)
 
     def __init__(self, PDF, d, sigprop, priorrange=None):
         """

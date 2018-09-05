@@ -31,3 +31,9 @@ __models__ = {cls.name: cls for cls in (
     models.NormModelInfer, models.RosenbrockAnalytic, models.BaseModel,
     models.EggBoxAnalytic, models.NormModelAnalytic, models.BaseInferModel)
 }
+
+__samplers__ = {cls.name: cls for cls in (
+    sampler.MarkChain, sampler.ParallelMarkChain)
+}
+
+# TODO: ADD IN __steppers__ when that feature is added and same with __priors__ when that feature is added

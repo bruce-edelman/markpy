@@ -44,11 +44,14 @@ def main():
     norm_model = mp.NormModelAnalytic(params, sigs, means)
     mc = mp.MarkChain(norm_model, dimension, sigmaprop)
 
-    Nsteps = 100000
+    Nsteps = 500000
     mc.run(Nsteps)
-    chain = np.zeros([len(mc.states[:,0]),len(mc.states[0,:]),1])
-    chain[:,:,0] = mc.states
+    c = mc.get_burn_samps()
+    chain = np.zeros([len(c[:,0]),len(c[0,:]),1])
+    chain[:,:,0] = c
     mp.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
+    file = 'geweke_test_normal_analytic_%s-d.png' % dimension
+    mp.plot_geweke(chain, 100, file)
     return None
 
 

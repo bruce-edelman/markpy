@@ -42,7 +42,7 @@ def gelman_rubin(chain, start=0, end=None):
 
     # initialize some variables to use
     chains = np.array(chain)
-    ndim, nwalkers, nlen = chain.shape
+    ndim, nchains, nlen = chain.shape
     gelman_r = np.zeros([ndim])
 
     # check if we put an end index, put it at end if we didn't
@@ -56,14 +56,14 @@ def gelman_rubin(chain, start=0, end=None):
     for i in range(ndim):
 
         # calculate the between chain variance as shown in: https://pymc-devs.github.io/pymc/modelchecking.html
-        between = nlen/(nwalkers-1)*np.sum(np.mean(chains[:,:,i], axis=0) - np.mean(chain[:,:,i]))**2
+        between = nlen/(nchains-1)*np.sum(np.mean(chains[:,:,i], axis=0) - np.mean(chain[:,:,i]))**2
 
         #calculate the witin chain variance as shown in: https://pymc-devs.github.io/pymc/modelchecking.html
-        wihtin = np.sum((chain[:,:,i] - np.mean(chain[:,:,i],axis=0))**2 / (nlen - 1))/nwalkers
+        wihtin = np.sum((chain[:,:,i] - np.mean(chain[:,:,i],axis=0))**2 / (nlen - 1))/nchains
 
         #calcuate the total and post variances to find R
         var = (1/nlen)*between + (nlen-1)/nlen*wihtin
-        post_var = var + between/nwalkers
+        post_var = var + between/nchains
 
         # store the R statistic for each parameter
         gelman_r[i] = np.sqrt(post_var/wihtin)
@@ -71,7 +71,7 @@ def gelman_rubin(chain, start=0, end=None):
     return gelman_r
 
 
-def geweke(chain, seg_len, ref_start, first_start=0, ref_end=None):
+def geweke(chain, seg_len, ref_start=None, first_start=0, ref_end=None):
     """
     This function calcualtes the Geweke convergence statisitic of a sinmgle mcmc chain of shape (niter, ndim)
     This calculates the geweke statistic for each individual mcmc chain. This calcuates the z-score based from:
@@ -89,9 +89,12 @@ def geweke(chain, seg_len, ref_start, first_start=0, ref_end=None):
     # initialize the arrays
     geweke_stats = []
     ends = []
-
+    if ref_end is None:
+        ref_end = chain.shape[0]
+    if ref_start is None:
+        ref_start = ref_end-seg_len
     # set up the array of starting indexes
-    starts = np.arange(first_start, ref_end, seg_len)
+    starts = np.arange(first_start, ref_start, seg_len)
 
     # set up the reference segment
     ref_segment = chain[ref_start:ref_end]
@@ -112,7 +115,7 @@ def geweke(chain, seg_len, ref_start, first_start=0, ref_end=None):
     return np.array(geweke_stats), np.array(starts), np.array(ends)
 
 
-def plot_geweke(chain, seglen, ref_start, start=0, end=None):
+def plot_geweke(chain, seglen,filename, ref_start=None, start=0, end=None):
     """
     This is a function to generate a quick visualization of convergence statistic geweke. This, if used, will be instead
     directly using the geweke function in this file. This function will take the attributes MarkChain.states = chains
@@ -127,18 +130,23 @@ def plot_geweke(chain, seglen, ref_start, start=0, end=None):
     """
 
     niter, ndim, nchains = chain.shape
-    data = np.zeros([int(start+(niter-end)/seglen), ndim, nchains])
-    ends = np.zeros([int(start+(niter-end)/seglen), ndim, nchains])
-    starts = np.zeros([int(start+(niter-end)/seglen), ndim, nchains])
-    fig, ax = plt.figure()
+    data = np.zeros([int(start+niter/seglen), ndim, nchains])
+    ends = np.zeros([int(start+niter/seglen), ndim, nchains])
+    starts = np.zeros([int(start+niter/seglen), ndim, nchains])
+    fig, axs = plt.subplots(ndim*nchains, sharex='col')
+    ct = 0
     for i in range(ndim):
         for j in range(nchains):
+            ax = axs[ct]
             data[:,i,j], starts[:,i,j], ends[:,i,j] = geweke(chain[:,i,j], seglen, ref_start, start, end)
             ax.plot(0.5*(starts[:,i,j]+ends[:,i,j]), data[:,i,j], 'r.')
+            ax.hlines(2, 0, niter, colors='b')
+            ax.hlines(-2, 0, niter, colors='b')
+            ct += 1
     plt.xlabel('Iteration')
     plt.ylabel('Geweke statistic z-score')
-    plt.title('Geweke Convergence Test - %s chains, %s dimensions' %(nchains, ndim))
-    plt.savefig('Geweke_%schains_%sdimensions.png' %(nchains,ndim))
+    plt.suptitle('Geweke Convergence Test - %s chains, %s dimensions' %(nchains, ndim))
+    plt.savefig(filename)
     plt.show()
     return None
 
