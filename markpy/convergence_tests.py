@@ -140,6 +140,12 @@ def plot_geweke(chain, seglen,filename, ref_start=None, start=0, end=None):
             ax = axs[ct]
             data[:,i,j], starts[:,i,j], ends[:,i,j] = geweke(chain[:,i,j], seglen, ref_start, start, end)
             ax.plot(0.5*(starts[:,i,j]+ends[:,i,j]), data[:,i,j], 'r.')
+            good = 0
+            for point in data[:,i,j]:
+                if point <= 2 or point >= -2:
+                    good += 1
+            frac = float(good/int(start+niter/seglen))
+            plt.title("%s%% of points within good z-score range for convergence" % frac )
             ax.hlines(2, 0, niter, colors='b')
             ax.hlines(-2, 0, niter, colors='b')
             ct += 1

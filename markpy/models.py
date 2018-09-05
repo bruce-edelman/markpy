@@ -33,7 +33,7 @@ class BaseModel(object):
     """
     name = "BaseModel"
     subtype = 'Base'
-    def __init__(self, samp_params, static_params=None, logprior=None):
+    def __init__(self, samp_params, static_params=None, logprior=None, prior_stats=None):
         """
         This is the initialization of the BaseModel class. This class will the be the base class that we generate our
         model (likliehood) objects out of. This model will not require data. The MarkChain object must take in a Model
@@ -49,6 +49,9 @@ class BaseModel(object):
         :param logprior: This is the prior to be used. Needs to be either a single value which will be used for each
          of the sampling parameters or a list that must be length of ndim with the prior value for each parameter in the
          same order they appear in samp_params
+         :param prior_stats: This is optional but necessary if no priorrange sent to MarkChain using this Model
+         It needs to be a mult-dimensional array of shape (2, 4) where stats[0] = means for each dim, and stats[1] = sig
+         for each dim, and stats[0] and stats[1] both have length = ndim
         #TODO: prior = 1 (logprior=0) for each parameter. i.e. Postulate of equal a-prior probabilities:
         #TODO: need to figure out a more elegant way of adding option of specifying the prior for each sampling parameter
         #TODO: individually
@@ -70,6 +73,15 @@ class BaseModel(object):
             self.static_params = {} # if none set it to an empty dict
         self.static_params = static_params
         # TODO: NEED TO IMPLEMENT ADDING THESE STATIC PARAMETERS INTO OUR CODE BASE FOR THE POSTERIOR CALCS
+
+        # check to make sure the inputed arg (if one given) is right shape needed for prior_stats
+        if prior_stats is None:
+            self.prior_stats = []
+        else:
+            self.prior_stats = np.array(prior_stats)
+            if self.prior_stats.shape != (2, self.dim):
+                raise ValueError("prior_stats must be of shape=(2, ndim)")
+
 
         # Error check to make sure that the prior given must either be a single value of a ndim-D array
         if len(self.prior) > 1 and len(self.prior) != self.dim:
@@ -167,6 +179,21 @@ class BaseModel(object):
         :return: returns a string with the name of the subtype.
         """
         return self.subtype
+
+    @property
+    def get_prior_stats(self):
+        """
+        method that will return prior stats that involve a mean, and cov (sigs) to pick the starting sample of our chain
+        if no priorrange is given. We start somewhere normally distributed around each params mean given in prior_stats
+        with each given sig for each param also in prior_stats
+        :return: returns the prior stats that have shape (2, ndim)
+        """
+
+        # Check to make sure a priorrange or prior_stats are given
+        if len(self.prior_stats) == 0:
+            raise ValueError("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
+        else:
+            return self.prior_stats
 
 class BaseInferModel(BaseModel):
     """

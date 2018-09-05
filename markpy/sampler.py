@@ -35,33 +35,38 @@ class MarkChain(object):
 
     name = 'Metropolis-Hastings Chain'
 
-    def __init__(self, PDF, d, sigprop, priorrange=None):
+    def __init__(self, Model, d, sigprop, priorrange=None):
         """
         When a MarkChain object is called we pass these parameters. This object is the main sampler for the mcmc and
         contains many properties and methods useful to use:
-        :param PDF: This needs to be an instance of the Model class which has a method get_posterior, and also
-        stores the sampling parameter names
+        :param Model: This needs to be an instance of the Model class (listed in models.py and __init__.py)
+         which has a method get_posterior, and also stores the sampling parameter names
         :param d: this is the dimensionality of our chain
         :param priorrange: this is a numpy array of shape (ndim,2) that gives the min/max value of the allowed
         range for each of the sampling parameters
         :param sigprop: this is the std-dev of the proposal step
         """
+        # this needs to be an object of class Model
+        self.model = Model
+
         # initialize the first sample in correct data structure
         if priorrange is None:
-            self.priorrange = np.full((d,2), 1)
+            try:
+                stats = self.model.get_prior_stats()
+            except ValueError:
+                print("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
+
+            self.oldsamp = np.random.normal(stats[0], stats[1])
+            self.priorrange = np.full((d,2), np.inf)
             self.priorrange[:,0] *= -1
         else:
             self.priorrange = priorrange
-
-        self.oldsamp = np.array([np.random.uniform(self.priorrange[i][0],self.priorrange[i][1]) for i in range(d)])
+            self.oldsamp = np.array([np.random.uniform(self.priorrange[i][0],self.priorrange[i][1]) for i in range(d)])
 
         # this variable will store the number of accepted samples
         self.acc = 0
         self.dim = d # dimension of our sampling
         self.sigmaprop = sigprop
-
-        # this needs to be an object of class Model
-        self.model= PDF
 
         # initlize our chain to be an array of array with the outer array being of shape (niter) (one right now) and
         # the inner array is of shape (ndim)
@@ -357,7 +362,7 @@ class MarkChain(object):
         acls = self.get_acl()
 
         # plot one for each of the dimensions (this may need fixed once we start doing other dimensions
-        fig, axs = plt.subplots(nrows=3, ncols=1, sharex='col')
+        fig, axs = plt.subplots(self.dim, sharex='col')
         for i in range(self.dim):
             ax = axs[i]
             ax.plot(acls[self.model.params[i]])
