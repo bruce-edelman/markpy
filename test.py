@@ -135,7 +135,7 @@ def main():
 
     test_model = mp.NormModelInfer(sig, model_two, data, params)
     # now using the setup model we can create the chain using the mp.MarkChain class
-    mc = mp.MarkChain(test_model, len(params), priorrange, sigprop)
+    mc = mp.MarkChain(test_model, len(params), sigprop, priorrange)
 
     # now we run the chain for Nsteps iterations
     mc.run(Nsteps, data, t)

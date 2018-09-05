@@ -37,7 +37,7 @@ class MarkChain(object):
     # TODO: we need to add is so we have another parameter: nwalkers which is the number of independent chains we
     # TODO: need to run for each sampling parameter -  we need to add it so self.states has shape (niter,ndim,nwalkers)
 
-    def __init__(self, PDF, d, priorrange, sigprop):
+    def __init__(self, PDF, d, sigprop, priorrange=None):
         """
         When a MarkChain object is called we pass these parameters. This object is the main sampler for the mcmc and
         contains many properties and methods useful to use:
@@ -49,7 +49,13 @@ class MarkChain(object):
         :param sigprop: this is the std-dev of the proposal step
         """
         # initialize the first sample in correct data structure
-        self.oldsamp = np.array([np.random.uniform(priorrange[i][0],priorrange[i][1]) for i in range(d)])
+        if priorrange is None:
+            self.priorrange = np.full((d,2), 1)
+            self.priorrange[:,0] *= -1
+        else:
+            self.priorrange = priorrange
+
+        self.oldsamp = np.array([np.random.uniform(self.priorrange[i][0],self.priorrange[i][1]) for i in range(d)])
 
         # this variable will store the number of accepted samples
         self.acc = 0
@@ -58,7 +64,6 @@ class MarkChain(object):
 
         # this needs to be an object of class Model
         self.model= PDF
-        self.priorrange = priorrange
 
         # initlize our chain to be an array of array with the outer array being of shape (niter) (one right now) and
         # the inner array is of shape (ndim)
@@ -172,7 +177,7 @@ class MarkChain(object):
     def run(self, n, *args):
         """
         This function is responsible for actually runnning the chain for however many steps:
-        :param N: This is how many interations we run the chain for
+        :param n: This is how many interations we run the chain for
         :param args: this is needed to pass for the PDF model Class later in stepping forward
         :return: this returns nothing
         """
@@ -420,3 +425,66 @@ def compute_acl(samps):
 
     return np.real(pi)[:int(len(samps) / 2)] / np.sum(m ** 2)
 
+
+class ParallelMarkChain(object):
+    """
+    This is a Wrapper class used to construct multiple chains and parralellize the total mcmc by constructing mutliple
+    independent markov chains
+    """
+    name = 'ParallelMarkChain'
+
+    def __init__(self, nchains, PDF, d, sigprop, priorrange=None):
+            """
+            This is the intialization function of the parallel markchain wrapper class the run mutlple mcmc chains
+            :param PDF: This needs to be an instance of the Model class which has a method get_posterior, and also
+            stores the sampling parameter names
+            :param d: this is the dimensionality of our chain
+            :param priorrange: this is a numpy array of shape (ndim,2) that gives the min/max value of the allowed
+            range for each of the sampling parameters
+            :param sigprop: this is the std-dev of the proposal step
+            """
+            self.states = None
+            self.nchains = nchains
+            self.chains = []*self.nchains
+            self.dim = d
+            for i in range(self.nchains):
+                self.chains[i] = MarkChain(PDF, d, sigprop, priorrange)
+
+    def run(self, n, *args):
+        """
+        This function is responsible for actually runnning all the chains at same time for however many steps:
+        :param n: This is how many interations we run the chain for
+        :param args: this is needed to pass for the PDF model Class later in stepping forward
+        :return: this returns nothing
+        """
+
+        # now we use the step_mh method to step the chain forward N steps
+        # TODO: maybe add a submodule that holds classes of steppers (MH, KDE, etc) and there we can add different types
+        # TODO: of moves rather than only the metropolis hastings stepper
+
+        # loop through the number of steps
+        for step in range(n):
+            # for each step take one step for each chain
+            for i in self.chains:
+                # take the metropolis-hastings step with this chain
+                i.step_mh(*args)
+        self.states = np.zeros(len(self.chains[0].states[:, 0]), self.dim, self.nchains)
+        return None
+
+    @property
+    def get_states(self):
+        """
+        propertyt function to return the states of all chains used in our parallel markchain object
+        :return: returns a numpy array states of shape (niter, ndim, nchains)
+        """
+
+        # Error check to make sure we ran the chain before generating states
+        if self.states is None:
+            raise ValueError("ParallelMarkChain has not been ran yet:")
+
+        # get the states out of each chain we have
+        for i in range(self.nchains):
+            self.states[i,:,:] = self.chains[i].states
+
+        # return the states
+        return self.states

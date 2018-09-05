@@ -27,12 +27,13 @@ This file provides some functions to use the corner python package to plot conve
 comparing the posterior samples distributions  
 """
 
-def corner_plot(chain, params):
+def corner_plot(chain, params, filename):
     """
     this function plots the corner plot for visualizeing the chain. It does so by taking the average of all chains if
     multiple are given
     :param chain: this is the chain.states data structure of shape (niter, ndim, nchains)
     :param params: this is a list of sampling params present in the chain
+    :param filename: this is a name of the file we want to save the plot to
     :return: returns nothing, just plots the figure and saves it as a .png file
     """
 
@@ -40,16 +41,14 @@ def corner_plot(chain, params):
     niter, ndim, nchains = chain.shape
 
     # initialize data for corner plots
-    data = np.zeros([ndim, niter])
+    data = np.zeros([niter, ndim])
 
     # get the mean of each chain
     for i in range(ndim):
         for j in range(niter):
-            data[i,j] = np.mean(chain[j,i,:])
+            data[j,i] = np.mean(chain[j,i,:])
 
     # generate the plot and save it
-    fig1, ax = plt.figure()
-    figure = corner.corner(data, labels=params, show_titles=True, title_kwargs={"fontsize": 12}, fig=fig1)
-    plt.savefig('corner_plot_%s-D.png' % ndim)
-
+    figure = corner.corner(data, labels=params, show_titles=True, title_kwargs={"fontsize": 12})
+    plt.savefig(filename)
     return None
