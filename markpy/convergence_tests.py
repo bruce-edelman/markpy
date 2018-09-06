@@ -133,24 +133,25 @@ def plot_geweke(chain, seglen,filename, ref_start=None, start=0, end=None):
     data = np.zeros([int(start+niter/seglen), ndim, nchains])
     ends = np.zeros([int(start+niter/seglen), ndim, nchains])
     starts = np.zeros([int(start+niter/seglen), ndim, nchains])
-    fig, axs = plt.subplots(ndim*nchains, sharex='col')
+    fig, axs = plt.subplots(ndim*nchains, sharex='col', sharey='col')
+    plt.subplots_adjust(hspace=0.5)
     ct = 0
     for i in range(ndim):
         for j in range(nchains):
             ax = axs[ct]
             data[:,i,j], starts[:,i,j], ends[:,i,j] = geweke(chain[:,i,j], seglen, ref_start, start, end)
-            ax.plot(0.5*(starts[:,i,j]+ends[:,i,j]), data[:,i,j], 'r.')
+            ax.plot(0.5*(starts[:,i,j]+ends[:,i,j]), data[:,i,j], 'ro', markersize=0.5)
+            ax.set_ylabel('z')
             good = 0
             for point in data[:,i,j]:
                 if point <= 2 or point >= -2:
                     good += 1
-            frac = float(good/int(start+niter/seglen))
-            plt.title("%s%% of points within good z-score range for convergence" % frac )
+            frac = float(good/int(start+niter/seglen))*100
+            ax.set_title("%s%% acceptable" % frac )
             ax.hlines(2, 0, niter, colors='b')
             ax.hlines(-2, 0, niter, colors='b')
             ct += 1
     plt.xlabel('Iteration')
-    plt.ylabel('Geweke statistic z-score')
     plt.suptitle('Geweke Convergence Test - %s chains, %s dimensions' %(nchains, ndim))
     plt.savefig(filename)
     plt.show()

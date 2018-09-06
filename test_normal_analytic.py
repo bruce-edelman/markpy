@@ -37,11 +37,11 @@ def main():
     sigs = np.array(np.random.normal(0.8,0.05,dimension))
 
     means = np.full(dimension, 0)
-    sigs = np.full(dimension, .01)
-
+    sigs = np.full(dimension, .08)
+    stats = np.array([means, sigs])
     params = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8']
     sigmaprop = 0.08
-    norm_model = mp.NormModelAnalytic(params, sigs, means)
+    norm_model = mp.NormModelAnalytic(params, sigs, means, prior_stats=stats)
     mc = mp.MarkChain(norm_model, dimension, sigmaprop)
 
     Nsteps = 500000
@@ -49,7 +49,7 @@ def main():
     c = mc.get_burn_samps()
     chain = np.zeros([len(c[:,0]),len(c[0,:]),1])
     chain[:,:,0] = c
-    mp.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
+    #mp.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
     file = 'geweke_test_normal_analytic_%s-d.png' % dimension
     mp.plot_geweke(chain, 100, file)
     return None

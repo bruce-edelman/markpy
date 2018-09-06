@@ -75,9 +75,7 @@ class BaseModel(object):
         # TODO: NEED TO IMPLEMENT ADDING THESE STATIC PARAMETERS INTO OUR CODE BASE FOR THE POSTERIOR CALCS
 
         # check to make sure the inputed arg (if one given) is right shape needed for prior_stats
-        if prior_stats is None:
-            self.prior_stats = []
-        else:
+        if prior_stats is not None:
             self.prior_stats = np.array(prior_stats)
             if self.prior_stats.shape != (2, self.dim):
                 raise ValueError("prior_stats must be of shape=(2, ndim)")
@@ -180,20 +178,20 @@ class BaseModel(object):
         """
         return self.subtype
 
-    @property
-    def get_prior_stats(self):
-        """
-        method that will return prior stats that involve a mean, and cov (sigs) to pick the starting sample of our chain
-        if no priorrange is given. We start somewhere normally distributed around each params mean given in prior_stats
-        with each given sig for each param also in prior_stats
-        :return: returns the prior stats that have shape (2, ndim)
-        """
-
-        # Check to make sure a priorrange or prior_stats are given
-        if len(self.prior_stats) == 0:
-            raise ValueError("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
-        else:
-            return self.prior_stats
+    # @property
+    # def get_prior_stats(self):
+    #     """
+    #     method that will return prior stats that involve a mean, and cov (sigs) to pick the starting sample of our chain
+    #     if no priorrange is given. We start somewhere normally distributed around each params mean given in prior_stats
+    #     with each given sig for each param also in prior_stats
+    #     :return: returns the prior stats that have shape (2, ndim)
+    #     """
+    #
+    #     # Check to make sure a priorrange or prior_stats are given
+    #     if len(self.prior_stats) == 0:
+    #         raise ValueError("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
+    #     else:
+    #         return self.prior_stats
 
 class BaseInferModel(BaseModel):
     """

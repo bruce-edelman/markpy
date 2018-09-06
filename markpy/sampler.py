@@ -50,13 +50,11 @@ class MarkChain(object):
         self.model = Model
 
         # initialize the first sample in correct data structure
-        if priorrange is None:
-            try:
-                stats = self.model.get_prior_stats()
-            except ValueError:
-                print("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
+        if priorrange is None and self.model.prior_stats is None:
+            raise ValueError("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
 
-            self.oldsamp = np.random.normal(stats[0], stats[1])
+        if priorrange is None:
+            self.oldsamp = np.random.normal(self.model.prior_stats[0], self.model.prior_stats[1])
             self.priorrange = np.full((d,2), np.inf)
             self.priorrange[:,0] *= -1
         else:
