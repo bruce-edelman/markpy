@@ -485,7 +485,31 @@ class ParallelMarkChain(object):
 
         # get the states out of each chain we have
         for i in range(self.nchains):
-            self.states[i,:,:] = self.chains[i].states
+            self.states[:,:,i] = self.chains[i].states
 
         # return the states
         return self.states
+
+    @property
+    def get_burn_samps(self):
+        """
+        This is a property fct that will return the burned in states for each independent chain we use
+        to keep each chain the same size we take the max burn id from each chain and cut that off from each chain
+        when returning the burned in samps
+        :return: this returns the burned in samps of shape (niter-max(burnids), ndim, nchains)
+        """
+
+        # Intialize list to store burn idxs for each chain
+        burnids = []
+
+        # loop through each chain
+        for i in self.chains:
+            # if a single chain is not burned in we raise an error and tell user to run the chains for longer
+            if not i.is_burned_in():
+                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
+
+            # add in the nect chains burn idx to the list
+            burnids.append(i.burn_idx())
+
+        # return the states with max(burnids) samples sliced off
+        return self.states[max(burnids):, :, :]
