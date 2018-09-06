@@ -26,6 +26,7 @@ import matplotlib.pyplot as plt
 This file Sets up the MarkChain object, used as our sampler in markpy
 """
 
+
 class MarkChain(object):
     """
     MarkChain is an object of the markov chain we are sampling. all parameters stored in MarkChain.states

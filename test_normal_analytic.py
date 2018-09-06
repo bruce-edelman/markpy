@@ -24,7 +24,6 @@ import matplotlib.pyplot as plt
 import markpy as mp
 
 
-
 """
 This is a python file that tests the markpy sampler on a simple gaussian analytic model
 
@@ -51,7 +50,7 @@ def main():
     chain[:,:,0] = c
     #mp.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
     file = 'geweke_test_normal_analytic_%s-d.png' % dimension
-    mp.plot_geweke(chain, 100, file)
+    mp.plot_geweke(chain, 20, file)
     return None
 
 

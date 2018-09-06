@@ -71,16 +71,17 @@ def gelman_rubin(chain, start=0, end=None):
     return gelman_r
 
 
-def geweke(chain, seg_len, ref_start=None, first_start=0, ref_end=None):
+def geweke(chain, nsegs, ref_start=None, first_start=0, ref_end=None, first_end=None):
     """
     This function calcualtes the Geweke convergence statisitic of a sinmgle mcmc chain of shape (niter, ndim)
     This calculates the geweke statistic for each individual mcmc chain. This calcuates the z-score based from:
     https://pymc-devs.github.io/pymc/modelchecking.html
     :param chain: single mcmc chain of samples so it has a shape of (niter, ndim)
-    :param seg_len: the length of sengments to use in calculating geweke
-    :param ref_start: the start index of the reference segment
+    :param nsegs: number of segmenets to calculate z-score for
+    :param ref_start: the start index of the reference segment , defaults to halfway through chain
     :param first_start: the first segments starting index, defualts to the beginning (0)
     :param ref_end: the end index of the reference segment, defaults to the end (None)
+    :param first_end: the ending index of the early section we generate segments from, defaults to 30% through chain
     :return: returns three numpy arrays each of length (nsegments) of however many segments we used in calculation
     the first array has the z-score for each segment, the second array is an array of starting indexes for each segment
     and lastly the third array is an array of ending indexes for the segments
@@ -92,9 +93,12 @@ def geweke(chain, seg_len, ref_start=None, first_start=0, ref_end=None):
     if ref_end is None:
         ref_end = chain.shape[0]
     if ref_start is None:
-        ref_start = ref_end-seg_len
+        ref_start = int(ref_end*0.5)
+    if first_end is None:
+        first_end = int(ref_end*0.3)
+    seg_len = int((first_end-first_start)/nsegs)
     # set up the array of starting indexes
-    starts = np.arange(first_start, ref_start, seg_len)
+    starts = np.arange(first_start, first_end, seg_len)
 
     # set up the reference segment
     ref_segment = chain[ref_start:ref_end]
@@ -115,17 +119,18 @@ def geweke(chain, seg_len, ref_start=None, first_start=0, ref_end=None):
     return np.array(geweke_stats), np.array(starts), np.array(ends)
 
 
-def plot_geweke(chain, seglen,filename, ref_start=None, start=0, end=None):
+def plot_geweke(chain, nsegs, filename, ref_start=None, start=0, end=None, ref_end=None):
     """
     This is a function to generate a quick visualization of convergence statistic geweke. This, if used, will be instead
     directly using the geweke function in this file. This function will take the attributes MarkChain.states = chains
     which has a shape of (niter, ndim, nchains). This function takes each individual chain ((ndim*nchains) of them ) and
     finds teh geweke for it and plots it on the y-axis at each segment
     :param chain: This is MarkChain.states so it has shape (niter, ndim, nchains)
-    :param seglen: the len of segments to use in geweke
+    :param nsegs: number of segmenets to calculate z-score for
     :param ref_start: start index of reference segment
     :param start: start index of the first segment, defaults to the beginning (0)
     :param end: end index of the first segment, defaults to the end (None)
+    :param ref_end: end index of the reference seg
     :return: Function returns None, but will show the plot and save it as a .png file
     """
 
@@ -139,7 +144,7 @@ def plot_geweke(chain, seglen,filename, ref_start=None, start=0, end=None):
     for i in range(ndim):
         for j in range(nchains):
             ax = axs[ct]
-            data[:,i,j], starts[:,i,j], ends[:,i,j] = geweke(chain[:,i,j], seglen, ref_start, start, end)
+            data[:,i,j], starts[:,i,j], ends[:,i,j] = geweke(chain[:,i,j], nsegs, ref_start, start, end, ref_end)
             ax.plot(0.5*(starts[:,i,j]+ends[:,i,j]), data[:,i,j], 'ro', markersize=0.5)
             ax.set_ylabel('z')
             good = 0
