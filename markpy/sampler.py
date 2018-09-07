@@ -66,10 +66,15 @@ class MarkChain(object):
         self.acc = 0
         self.dim = d # dimension of our sampling
         self.sigmaprop = sigprop
+        self.N = None
 
         # initlize our chain to be an array of array with the outer array being of shape (niter) (one right now) and
         # the inner array is of shape (ndim)
         self.states = [self.oldsamp] # initialize our output
+
+        # attribute that stores what number chain this is in a ParallelMarkObject
+        # defaults to None and is None if the MarkChain is being operated alone
+        self.number = None
 
     def step_mh(self, *args):
         """
@@ -447,10 +452,12 @@ class ParallelMarkChain(object):
             """
             self.states = None
             self.nchains = nchains
-            self.chains = []*self.nchains
+            self.chains = []
             self.dim = d
             for i in range(self.nchains):
-                self.chains[i] = MarkChain(PDF, d, sigprop, priorrange)
+                chain = MarkChain(PDF, d, sigprop, priorrange)
+                chain.number = i
+                self.chains.append(chain)
 
     def run(self, n, *args):
         """
@@ -468,9 +475,10 @@ class ParallelMarkChain(object):
         for step in range(n):
             # for each step take one step for each chain
             for i in self.chains:
+                i.N = n
                 # take the metropolis-hastings step with this chain
                 i.step_mh(*args)
-        self.states = np.zeros(len(self.chains[0].states[:, 0]), self.dim, self.nchains)
+        self.states = np.zeros([n+1, self.dim, self.nchains])
         return None
 
     @property
@@ -506,11 +514,11 @@ class ParallelMarkChain(object):
         # loop through each chain
         for i in self.chains:
             # if a single chain is not burned in we raise an error and tell user to run the chains for longer
-            if not i.is_burned_in():
+            if not i.is_burned_in:
                 raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
 
-            # add in the nect chains burn idx to the list
-            burnids.append(i.burn_idx())
-
+            # add in the next chains burn idx to the list
+            burnids.append(i.burn_idx)
+        self.states = self.get_states
         # return the states with max(burnids) samples sliced off
         return self.states[max(burnids):, :, :]
