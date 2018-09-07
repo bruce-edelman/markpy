@@ -134,6 +134,14 @@ def plot_geweke(chain, nsegs, filename, ref_start=None, start=0, end=None, ref_e
     :return: Function returns None, but will show the plot and save it as a .png file
     """
 
+    if ref_end is None:
+        ref_end = chain.shape[0]
+    if ref_start is None:
+        ref_start = int(ref_end*0.5)
+    if end is None:
+        end = int(ref_end*0.3)
+    seglen = int((end-start)/nsegs)
+
     niter, ndim, nchains = chain.shape
     data = np.zeros([int(start+niter/seglen), ndim, nchains])
     ends = np.zeros([int(start+niter/seglen), ndim, nchains])
