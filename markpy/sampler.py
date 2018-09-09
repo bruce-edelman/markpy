@@ -18,9 +18,10 @@
 markPy is a python package developed by Bruce Edelman to implement MCMC sampling among other things
 
 """
-
+import steppers
 import numpy as np
 import matplotlib.pyplot as plt
+
 
 """
 This file Sets up the MarkChain object, used as our sampler in markpy
@@ -36,16 +37,18 @@ class MarkChain(object):
 
     name = 'Metropolis-Hastings Chain'
 
-    def __init__(self, Model, d, sigprop, priorrange=None):
+    def __init__(self, Model, d, sigprop, stepper=None, priorrange=None):
         """
         When a MarkChain object is called we pass these parameters. This object is the main sampler for the mcmc and
         contains many properties and methods useful to use:
         :param Model: This needs to be an instance of the Model class (listed in models.py and __init__.py)
          which has a method get_posterior, and also stores the sampling parameter names
         :param d: this is the dimensionality of our chain
+        :param sigprop: this is the std-dev of the proposal step
+        :param stepper: This is an instance of a stepper class listed in steppers.py and __init__.py
+        This must not have a subtype='base" just as the Model parameter
         :param priorrange: this is a numpy array of shape (ndim,2) that gives the min/max value of the allowed
         range for each of the sampling parameters
-        :param sigprop: this is the std-dev of the proposal step
         """
 
         # this needs to be an object of class Model and must have subtype != 'base'
@@ -69,29 +72,35 @@ class MarkChain(object):
         # this variable will store the number of accepted samples
         self.acc = 0
         self.dim = d # dimension of our sampling
-        self.sigmaprop = sigprop
         self.N = None
 
         # initlize our chain to be an array of array with the outer array being of shape (niter) (one right now) and
         # the inner array is of shape (ndim)
         self.states = [self.oldsamp] # initialize our output
 
+
+        # This needs to be an object isntance of a stepper class and must have subtype != 'Base'
+        if stepper is None:
+            stepper = steppers.MetropolisHastings
+        if stepper.subtype == 'Base':
+            raise TypeError("Stepper Parameter in MarkChain Must be a Stepper Class created in steppers.py that does not"
+                            "have subtype of Base")
+        self.stepper = stepper(sigprop, self.model, self.dim, self.priorrange)
+
         # attribute that stores what number chain this is in a ParallelMarkObject
         # defaults to None and is None if the MarkChain is being operated alone
         self.number = None
 
-    def step_mh(self, *args):
+    def step(self, *args):
         """
         This function performs the Metropolis-Hastings algorithm step.
         :param args: This are other args that are passed to the Model function used in the HastingsRatio func
         :return: This function does not return anything just updates the chain attribute of states and acc
         """
 
-        # here we propose the next step using our proposal method
-        newsamp = self.proposedStep()
-
-        # now we use the hastingsRatio function to decide if we accept this proposed step and update samps
-        acc, newsamp = self.hastingsRatio(newsamp, *args)
+        # Use the stepper object to perform whatever kind of step we need
+        newsamp = self.stepper.proposal(self.oldsamp)
+        acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
 
         # now we append the states with newsamp, if it was accepted newsamp is different than oldsamp, if not
         # it is the same as self.oldsamp
@@ -100,16 +109,6 @@ class MarkChain(object):
         if acc: # if we accepted a new value update for our AR
             self.acc += 1
         self.oldsamp = newsamp # reset oldsamp variable for next iteration
-
-    def proposedStep(self):
-        """
-        This function is our proposal function for determining where to step next. There is no parameters to this
-        :return: This returns a newsamp which is normally distributed with mean 0 and sigma= sigmaprop around the previous
-        sample. sample is an array of shape (ndim)
-        """
-
-        # random walk proposed step with a normal distribution
-        return self.oldsamp+np.random.normal(0., self.sigmaprop, self.dim)
 
     @property
     def currentState(self):
@@ -201,41 +200,8 @@ class MarkChain(object):
         # TODO: maybe add a submodule that holds classes of steppers (MH, KDE, etc) and there we can add different types
         # TODO: of moves rather than only the metropolis hastings stepper
         for i in range(n):
-            self.step_mh(*args)
+            self.step(*args)
         return None
-
-    def hastingsRatio(self, newsamp, *args):
-        """
-        This function calcualtes the hastings ratio of our proposed new sample and decides whether to accept that sample
-        or reject it
-        :param newsamp: this is an array of shape (ndim) that is the proposed step we are deciding to accept or not
-        :param args: these args are needed to calculate the Model Class get_posterior fcts
-        :return: this returns a bool acc that tells us if we accepted the sample or not and also the sample that we
-        chose to accept or the oldsample if we rejected the new one
-        """
-        # function calculates the hastings ratio and decides to accept or reject proposed step
-        # Check to make sure the proposed sample is still in the allowed range according to the priorrange array
-        if not ((np.array([p1-p2 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][0])]) > 0).all()
-                and (np.array([p2-p1 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][1])]) > 0).all()):
-            # if newsamp is not in the allowed prior range we set accept to False and return the oldsamp instead of the
-            # newsamp
-            acc = False
-            return acc, self.oldsamp
-
-        # now we know we are accepting with at least some prob so we need probabilities calculated through our Model
-        # class and some the functions we created it with
-        newp = self.model.get_posterior(newsamp, *args)
-        oldp = self.model.get_posterior(self.oldsamp, *args)
-
-        if newp >= oldp:
-            # if new step is more prob than old we accept immediately and return the new samp
-            acc = True
-            return acc, newsamp
-        else:
-            # oldp is bigger so we only accept the step probablistically as in MH algo
-            prob = newp[0]/oldp[0]
-            acc = np.random.choice([True, False], p=[prob, 1.-prob])
-            return acc, acc*newsamp + (1. - acc)*self.oldsamp
 
     def get_acl(self):
         """

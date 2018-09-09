@@ -76,7 +76,7 @@ def geweke(chain, nsegs, ref_start=None, first_start=0, ref_end=None, first_end=
     This function calcualtes the Geweke convergence statisitic of a sinmgle mcmc chain of shape (niter, ndim)
     This calculates the geweke statistic for each individual mcmc chain. This calcuates the z-score based from:
     https://pymc-devs.github.io/pymc/modelchecking.html
-    :param chain: single mcmc chain of samples so it has a shape of (niter, ndim)
+    :param chain: single mcmc chain of samples so it has a shape of (niter)
     :param nsegs: number of segmenets to calculate z-score for
     :param ref_start: the start index of the reference segment , defaults to halfway through chain
     :param first_start: the first segments starting index, defualts to the beginning (0)
@@ -91,7 +91,7 @@ def geweke(chain, nsegs, ref_start=None, first_start=0, ref_end=None, first_end=
     geweke_stats = []
     ends = []
     if ref_end is None:
-        ref_end = chain.shape[0]
+        ref_end = len(chain)-1
     if ref_start is None:
         ref_start = int(ref_end*0.5)
     if first_end is None:
@@ -99,7 +99,6 @@ def geweke(chain, nsegs, ref_start=None, first_start=0, ref_end=None, first_end=
     seg_len = int((first_end-first_start)/nsegs)
     # set up the array of starting indexes
     starts = np.arange(first_start, first_end, seg_len)
-
     # set up the reference segment
     ref_segment = chain[ref_start:ref_end]
 
@@ -114,7 +113,6 @@ def geweke(chain, nsegs, ref_start=None, first_start=0, ref_end=None, first_end=
 
         # Add the end index to the list of ends
         ends.append(int(start+seg_len))
-
     #return all three numpy arrays
     return np.array(geweke_stats), np.array(starts), np.array(ends)
 
@@ -134,18 +132,12 @@ def plot_geweke(chain, nsegs, filename, ref_start=None, start=0, end=None, ref_e
     :return: Function returns None, but will show the plot and save it as a .png file
     """
 
-    if ref_end is None:
-        ref_end = chain.shape[0]
-    if ref_start is None:
-        ref_start = int(ref_end*0.5)
-    if end is None:
-        end = int(ref_end*0.3)
-    seglen = int((end-start)/nsegs)
+
 
     niter, ndim, nchains = chain.shape
-    data = np.zeros([int(start+niter/seglen), ndim, nchains])
-    ends = np.zeros([int(start+niter/seglen), ndim, nchains])
-    starts = np.zeros([int(start+niter/seglen), ndim, nchains])
+    data = np.zeros([nsegs+1, ndim, nchains])
+    ends = np.zeros([nsegs+1, ndim, nchains])
+    starts = np.zeros([nsegs+1, ndim, nchains])
     fig, axs = plt.subplots(ndim*nchains, sharex='col', sharey='col')
     plt.subplots_adjust(hspace=0.5)
     ct = 0
@@ -159,10 +151,10 @@ def plot_geweke(chain, nsegs, filename, ref_start=None, start=0, end=None, ref_e
             for point in data[:,i,j]:
                 if point <= 2 or point >= -2:
                     good += 1
-            frac = float(good/int(start+niter/seglen))*100
+            frac = float(good/(nsegs+1))*100
             ax.set_title("%s%% acceptable" % frac )
-            ax.hlines(2, 0, niter, colors='b')
-            ax.hlines(-2, 0, niter, colors='b')
+            ax.hlines(2, 0, max(ends[:,i,j]), colors='b')
+            ax.hlines(-2, 0, max(ends[:,i,j]), colors='b')
             ct += 1
     plt.xlabel('Iteration')
     plt.suptitle('Geweke Convergence Test - %s chains, %s dimensions' %(nchains, ndim))

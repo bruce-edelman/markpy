@@ -247,7 +247,7 @@ class NormModelInfer(BaseInferModel):
     data to infer from (most used model class probably)
     """
     name = "NormModelInfer"
-    subtype = 'Likliehood'
+    subtype = 'InferenceModel'
 
     def __init__(self, sig, model_func, data, samp_params, **kwargs):
         """
@@ -292,6 +292,7 @@ class NormModelAnalytic(BaseModel):
     i.e. does not use any data
     """
     name = "NormModelAnalytic"
+    subtype = "AnalyticModel"
 
     def __init__(self,samp_params, sig=None, mean=None, **kwargs):
         """
@@ -350,6 +351,8 @@ class EggBoxAnalytic(BaseModel):
     This is a child class from parent BaseModel that provides an analytical likliehood function for the EggBox model
     """
     name = "EggBoxAnalytic"
+    subtype = "AnalyticModel"
+
 
     def __init__(self, samp_params, **kwargs):
         """
@@ -386,6 +389,8 @@ class RosenbrockAnalytic(BaseModel):
     This is a child class from parent BaseModel that provides an analytical likliehood function for the Rosenbrock model
     """
     name = "RosenbrockAnalyitc"
+    subtype = "AnalyticModel"
+
 
     def __init__(self, samp_parms, **kwargs):
         """
@@ -426,6 +431,8 @@ class ModelGenericAnalytic(BaseModel):
     that does not use data
     """
     name = 'ModelGenericAnalytic'
+    subtype = "AnalyticModel"
+
 
     def __init__(self, logpdf, samp_params, *args, **kwargs):
         """

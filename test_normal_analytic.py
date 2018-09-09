@@ -21,7 +21,7 @@ markPy is a python package developed by Bruce Edelman to implement MCMC sampling
 
 import numpy as np
 import matplotlib.pyplot as plt
-import markpy as mp
+import markpy
 
 
 """
@@ -40,17 +40,17 @@ def main():
     stats = np.array([means, sigs])
     params = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8']
     sigmaprop = 0.08
-    norm_model = mp.NormModelAnalytic(params, sigs, means, prior_stats=stats)
-    mc = mp.MarkChain(norm_model, dimension, sigmaprop)
+    norm_model = markpy.NormModelAnalytic(params, sigs, means, prior_stats=stats)
+    mc = markpy.MarkChain(norm_model, dimension, sigmaprop)
 
-    Nsteps = 500000
+    Nsteps = 40000
     mc.run(Nsteps)
     c = mc.get_burn_samps()
     chain = np.zeros([len(c[:,0]),len(c[0,:]),1])
     chain[:,:,0] = c
     #mp.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
     file = 'geweke_test_normal_analytic_%s-d.png' % dimension
-    mp.plot_geweke(chain, 20, file)
+    markpy.plot_geweke(chain, 80, file)
     return None
 
 

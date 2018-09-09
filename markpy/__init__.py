@@ -22,6 +22,7 @@ from .sampler import *
 from .convergence_tests import *
 from .models import *
 from .corner_plot import *
+from .steppers import *
 
 __author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
 
@@ -32,8 +33,11 @@ __models__ = {cls.name: cls for cls in (
     models.EggBoxAnalytic, models.NormModelAnalytic, models.BaseInferModel)
 }
 
-__samplers__ = {cls.name: cls for cls in (
+__chains__ = {cls.name: cls for cls in (
     sampler.MarkChain, sampler.ParallelMarkChain)
 }
 
-# TODO: ADD IN __steppers__ when that feature is added and same with __priors__ when that feature is added
+__steppers__ = {cls.name: cls for cls in (
+    steppers.BaseStepper, steppers.BaseStepper
+)}
+
