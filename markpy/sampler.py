@@ -47,7 +47,11 @@ class MarkChain(object):
         range for each of the sampling parameters
         :param sigprop: this is the std-dev of the proposal step
         """
-        # this needs to be an object of class Model
+
+        # this needs to be an object of class Model and must have subtype != 'base'
+        if Model.subtype == 'Base':
+            raise TypeError("Model Parameter in MarkChain Must be a Model Class created in models.py that does not have"
+                            "subtype of Base")
         self.model = Model
 
         # initialize the first sample in correct data structure
@@ -484,8 +488,8 @@ class ParallelMarkChain(object):
     @property
     def get_states(self):
         """
-        propertyt function to return the states of all chains used in our parallel markchain object
-        :return: returns a numpy array states of shape (niter, ndim, nchains)
+                propertyt function to return the states of each of the chains used in our parallel markchain object
+                :return: returns a numpy array states of shape (niter, ndim, nchains)
         """
 
         # Error check to make sure we ran the chain before generating states
@@ -494,10 +498,10 @@ class ParallelMarkChain(object):
 
         # get the states out of each chain we have
         for i in range(self.nchains):
-            self.states[:,:,i] = self.chains[i].states
+            self.states[:, :, i] = self.chains[i].states
 
-        # return the states
         return self.states
+
 
     @property
     def get_burn_samps(self):
@@ -522,3 +526,56 @@ class ParallelMarkChain(object):
         self.states = self.get_states
         # return the states with max(burnids) samples sliced off
         return self.states[max(burnids):, :, :]
+
+    @property
+    def get_mean_states(self):
+        """
+            propertyt function to return the states of the mean of the chains used in our parallel markchain object
+            :return: returns a numpy array states of shape (niter, ndim)
+        """
+
+        # Error check to make sure we ran the chain before generating states
+        if self.states is None:
+            raise ValueError("ParallelMarkChain has not been ran yet:")
+
+        # initialize the means array
+        means = np.zeros([len(self.chains[0].states[:, 0]), self.dim])
+
+        # get the states out of each chain we have
+        for i in range(self.nchains):
+            self.states[:, :, i] = self.chains[i].states
+
+        # get the means out
+        for i in range(self.dim):
+            for j in range(len(self.chains[0].states[:,i])):
+                means[j,i] = np.mean(self.states[j,i,:])
+
+        # return the means
+        return means
+
+    @property
+    def get_mean_burn_sams(self):
+        """
+            This is a property fct that will return the mean burned in states of the independent chains we use
+            to keep each chain the same size we take the max burn id from each chain and cut that off from each chain
+            when returning the burned in samps
+            :return: this returns the burned in samps of shape (niter-max(burnids), ndim, nchains)
+        """
+
+        # Intialize list to store burn idxs for each chain
+        burnids = []
+
+        # loop through each chain
+        for i in self.chains:
+            # if a single chain is not burned in we raise an error and tell user to run the chains for longer
+            if not i.is_burned_in:
+                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
+
+            # add in the next chains burn idx to the list
+            burnids.append(i.burn_idx)
+
+        # get the means
+        samps = self.get_mean_states
+
+        # return the means with max(burnids) samples sliced off
+        return samps[max(burnids):, :]
