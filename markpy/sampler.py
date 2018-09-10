@@ -447,7 +447,7 @@ class ParallelMarkChain(object):
             for i in self.chains:
                 i.N = n
                 # take the metropolis-hastings step with this chain
-                i.step_mh(*args)
+                i.step(*args)
         self.states = np.zeros([n+1, self.dim, self.nchains])
         return None
 
@@ -520,7 +520,7 @@ class ParallelMarkChain(object):
         return means
 
     @property
-    def get_mean_burn_sams(self):
+    def get_mean_burn_samps(self):
         """
             This is a property fct that will return the mean burned in states of the independent chains we use
             to keep each chain the same size we take the max burn id from each chain and cut that off from each chain

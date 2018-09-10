@@ -33,7 +33,7 @@ def gelman_rubin(chain, start=0, end=None):
     This statistic only makes sense when we are running our mcmc chain with multiple independent
     chains or walkers for each of the sampling parameters:
     Formulas for the tests given  at: https://pymc-devs.github.io/pymc/modelchecking.html
-    :param chain: This is an attribute of the MarkChain object and should have shape (niter, nchains, ndim)
+    :param chain: This is an attribute of the MarkChain object and should have shape (niter, ndim, nchains)
     :param start:  This is the starting index of where to start calculating, defaults to the beginnning
     :param end:  THis is the ending index of where to calculate the GR statistic from, defaults to the end of the chain
     :return: This returns an array of shape (ndim) that has the GR R stat for each of the sampling params or each
@@ -42,7 +42,7 @@ def gelman_rubin(chain, start=0, end=None):
 
     # initialize some variables to use
     chains = np.array(chain)
-    ndim, nchains, nlen = chain.shape
+    nlen, ndim, nchains = chain.shape
     gelman_r = np.zeros([ndim])
 
     # check if we put an end index, put it at end if we didn't
@@ -56,17 +56,17 @@ def gelman_rubin(chain, start=0, end=None):
     for i in range(ndim):
 
         # calculate the between chain variance as shown in: https://pymc-devs.github.io/pymc/modelchecking.html
-        between = nlen/(nchains-1)*np.sum(np.mean(chains[:,:,i], axis=0) - np.mean(chain[:,:,i]))**2
+        between = nlen/(nchains-1)*np.sum(np.mean(chains[:,i,:], axis=0) - np.mean(chain[:,i,:]))**2
 
         #calculate the witin chain variance as shown in: https://pymc-devs.github.io/pymc/modelchecking.html
-        wihtin = np.sum((chain[:,:,i] - np.mean(chain[:,:,i],axis=0))**2 / (nlen - 1))/nchains
+        wihtin = np.sum((chain[:,i,:] - np.mean(chain[:,i,:],axis=0))**2 / (nlen - 1))/nchains
 
         #calcuate the total and post variances to find R
         var = (1/nlen)*between + (nlen-1)/nlen*wihtin
-        post_var = var + between/nchains
+        #post_var = var + between/nchains
 
         # store the R statistic for each parameter
-        gelman_r[i] = np.sqrt(post_var/wihtin)
+        gelman_r[i] = np.sqrt(var/wihtin)
 
     return gelman_r
 
@@ -162,7 +162,7 @@ def plot_geweke(chain, nsegs, filename, ref_start=None, start=0, end=None, ref_e
     plt.show()
     return None
 
-def plot_gelman_rubin(chain):
+def plot_gelman_rubin(chain, file):
     """
     This is simalr function to plot_geweke, but only takes in a total MarkChain.states of shape (niter, ndim, nchains)
     and will plot the Gelman-R statistic for the mcmc chain to determin if it has converged
@@ -178,11 +178,11 @@ def plot_gelman_rubin(chain):
 
     # plot the data and save the fig
     plt.figure()
-    plt.scatter(R, 'b.')
+    plt.plot(R, 'b.')
     plt.ylabel('Gelman-Rubin Statistic')
     plt.xlabel('chain dimension')
     plt.title('Gelman-Rubin Statistic for each dimension of the chain')
-    plt.savefig('Gelman_Rubin_%sdimensions.png' % ndim)
+    plt.savefig(file)
     plt.show()
     return None
 

@@ -40,7 +40,7 @@ def main():
     means = np.full(dimension, 0)
     sigs = np.full(dimension, .08)
     stats = np.array([means, sigs])
-    nwalkers = 6
+    nwalkers = 8
     params = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8']
     sigmaprop = 0.08
     norm_model = mp.NormModelAnalytic(params, sigs, means, prior_stats=stats)
@@ -49,8 +49,8 @@ def main():
     Nsteps = 100000
     mc.run(Nsteps)
     c = mc.get_burn_samps
-    file = "Parallel_test_%swalkers.png" %nwalkers
-
+    # file = "Parallel_test_%swalkers.png" %nwalkers
+    """
     fig, axs = plt.subplots(dimension, sharex='col')
     for i in range(dimension):
         ax = axs[i]
@@ -62,6 +62,10 @@ def main():
     plt.xlabel("Iteration")
     plt.savefig(file)
     plt.show()
+    """
+
+    file = "GelmanRubin_%sdim_%swalkers_%ssteps" % (dimension, nwalkers, Nsteps)
+    mp.plot_gelman_rubin(c, file)
 
     return None
 
