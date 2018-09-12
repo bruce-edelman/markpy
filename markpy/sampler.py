@@ -22,6 +22,7 @@ from .pbar import *
 from .steppers import *
 import numpy as np
 import matplotlib.pyplot as plt
+import time, datetime
 
 
 """
@@ -96,14 +97,19 @@ class MarkChain(object):
         # defaults to None and is None if the MarkChain is being operated alone
         self.number = None
 
-    def step(self, n, thin=None, progress=None, *args):
+    def step(self, n, thin=None, progress=None, pbar=None, *args):
         """
-        This is the step generator that will return the iterable samples of the markov chain
+        This is the step generator that will return the iterable samples of the markov chain as it evolves
+
+        #TODO: FIGURE OUT ALL BUGS HERE FOR SURE
+        WANRNING: THIS IS A GENERATOR AND JUST GOT CHANGED. MAY BE OTHER BUGS WITH THE STATES AND ACCESSIGN THEM
+
         :param n: this is the number of iterations to run for
         :param thin: this is a parameter that defaults to None, if we set it to a value then it will thin the mcmc by
         that ratio, if None is given no thinning
         :param progress:  defaults to False, if True will display  progress bar. Progress bar created as in:
         github.com/dfm/emcee/emcee/pbar.py
+        :param pbar: SAME DOC AS IN RUN METHOD
         :param args: This are other args that are passed to the Model function used in the HastingsRatio func
         :return: This returns an iterable (since its a generator) should return an array that is shape=ndim
         """
@@ -122,24 +128,41 @@ class MarkChain(object):
         total = n * intermediate_step
 
         # setup the progress bar
-        with progress_bar(progress, total) as pbar:
+        if self.number is None: # check if this is being used in ParallelMark Chain object
+            with progress_bar(progress, total) as pbar:
+                # loop through iterations
+                for _ in range(n):
+                    # loop through our thinning procedure if necessary
+                    for _ in range(intermediate_step):
+
+                        # Use the stepper object to perform whatever kind of step we need
+                        newsamp = self.stepper.proposal(self.oldsamp)
+                        acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
+
+                        if acc:  # if we accepted a new value update for our AR
+                            self.acc += 1
+                        self.oldsamp = newsamp  # reset oldsamp variable for next iteration
+                        # update the pbar
+                        pbar.update(1)
+
+                    # now we return that samp from the generator
+                    yield np.array(newsamp)
+        else: # if it is being used dont create its own pbar, use the inherited one
             # loop through iterations
             for _ in range(n):
                 # loop through our thinning procedure if necessary
                 for _ in range(intermediate_step):
-
                     # Use the stepper object to perform whatever kind of step we need
                     newsamp = self.stepper.proposal(self.oldsamp)
                     acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
-
                     if acc:  # if we accepted a new value update for our AR
                         self.acc += 1
                     self.oldsamp = newsamp  # reset oldsamp variable for next iteration
-                    # update the pbar
-                    pbar.update(1)
-
-                    # now we return that samp from the generator
-                    yield [newsamp]
+                    # update that inherited pbar
+                    if pbar is not None:
+                        pbar.update(1)
+                # now we return that samp from the generator
+                yield np.array(newsamp)
 
     @property
     def currentSamp(self):
@@ -207,7 +230,7 @@ class MarkChain(object):
             print("Chain is not burned in: Run for more iterations")
             pass
 
-    def run(self, n, thin=None, progress=False, burn=False, ind=False, *args):
+    def run(self, n, thin=None, progress=False, burn=False, ind=False, pbar=None, *args):
         """
         This function is responsible for actually running the chain for however many steps:
         :param n: This is how many iterations we run the chain for
@@ -218,6 +241,7 @@ class MarkChain(object):
         :param burn: bool to decide to return burn samps or just reg sampls defaults to reg
         :param ind: bool to decide to return ind. samps or just reg. defaults to reg burn has priority over ind if both
         are set to True
+        :param pbar: if using the parallel markchain it will pass a progress bar object from tqdm here to get sent to step fct
         :param args: this is needed to pass for the PDF model Class later in stepping forward
         :returns: this returns an array of the samples of shape (samp, ndim)
         """
@@ -225,15 +249,21 @@ class MarkChain(object):
         # *args which depend on The model we set up
         # TODO: maybe figure a way to move this self.N def into __init__ but that will require some reworking of structure
         self.N = n
-        results = None
-        for results in self.step(n,thin, progress, *args):
-            pass
+        # initialize variables for generating the states
+        samps = np.zeros([n, self.dim])
+        ct = 0
+        # use our step generator to get out the results
+        for results in self.step(n,thin, progress,pbar, *args):
+            samps[ct,:] = results
+            ct += 1
+
+        # input logic to decide what we want returned
         if burn:
-            return self.get_burn_samps(results)
+            return self.get_burn_samps(samps)
         elif ind:
-            return self.get_independent_samps(results)
+            return self.get_independent_samps(samps)
         else:
-            return  results
+            return  samps
 
 
     def get_acl(self, samps):
@@ -458,11 +488,14 @@ class ParallelMarkChain(object):
             self.nchains = nchains
             self.chains = []
             self.dim = d
+            # Create an array of MarkChain objects and set each to have an ordered number attribute
             for i in range(self.nchains):
                 chain = MarkChain(PDF, d, sigprop, priorrange)
                 chain.number = i
                 self.chains.append(chain)
-    def run(self, n, thin=None, progress=False, burn=False, ind=False, mean=False, *args):
+
+
+    def run(self, n, thin=None, progress=False, burn=False, ind=False, mean=False, verbose=False, *args):
         """
         This function is responsible for actually running the chain for however many steps:
         :param n: This is how many iterations we run the chain for
@@ -474,14 +507,38 @@ class ParallelMarkChain(object):
         :param ind: bool to decide to return ind. samps or just reg. defaults to reg burn has priority over ind if both
         are set to True
         :param mean: defaults to False, If True will avearge over nchains for samples
+        :param verbose: if set to true will give more stats on the mcmc as it finishes
         :param args: this is needed to pass for the PDF model Class later in stepping forward
         :returns: this returns an array of the samples of shape (samp, nchains, ndim)
         """
-        parallel_samps = []
-        for i in self.chains:
-            parallel_samps.append([i.run(n, thin, progress, burn, ind, *args)])
+        # intialize data structure
+        parallel_samps = np.zeros([n, self.dim, self.nchains])
+
+        # time calc for verbose
+        start_time = time.clock()
+
+        #thinning procedure check
+        total = n*self.nchains
+        if thin is not None:
+            if thin <= 0:
+                raise ValueError("thin value must be strictly positive")
+            total *= thin
+
+        # setup progress bar
+        with progress_bar(progress, total) as pbar:
+            # run each chain for given amount and store the results
+            for i in self.chains:
+                parallel_samps[:,:,i.number] = i.run(n, thin, progress, burn, ind, pbar, *args)
+        if verbose:
+            # these are the verbose outputs for extra information about runtime
+            end_time = datetime.datetime.now()
+            time_elapsed = round(time.clock() - start_time, 2)
+            chain_st_time = datetime.datetime.now()
+            print("START TIME: %s \nEND TIME: %s \nTIME ELAPSED: %.2f sec" %(chain_st_time, end_time, time_elapsed))
+            print("Average Step / sec : %.3f" % float(total/time_elapsed))
         if mean:
-            return self.get_mean_states(np.array([parallel_samps]))
+            # check if we want mean samps or all of the samps
+            return self.get_mean_states(parallel_samps)
         else:
             return parallel_samps
 

@@ -24,6 +24,7 @@ import matplotlib.pyplot as plt
 import markpy as mp
 from itertools import cycle
 
+
 COLOR_CYCLE = cycle('bgrcmk')
 
 """
@@ -38,23 +39,26 @@ def main():
     # sigs = np.array(np.random.normal(0.8,0.05,dimension))
 
     means = np.full(dimension, 0)
-    sigs = np.full(dimension, .08)
+    sigs = np.full(dimension, .1)
     stats = np.array([means, sigs])
-    nwalkers = 8
+    nwalkers = 6
     params = ['x1', 'x2', 'x3', 'x4', 'x5', 'x6', 'x7', 'x8']
-    sigmaprop = 0.08
+    sigmaprop = 0.1
     norm_model = mp.NormModelAnalytic(params, sigs, means, prior_stats=stats)
     mc = mp.ParallelMarkChain(nwalkers,norm_model, dimension, sigmaprop)
 
     Nsteps = 50000
     all_samps = mc.run(Nsteps, progress=True, thin=10)
+    print(all_samps.shape)
+
+    
     file = "Parallel_test_%swalkers.png" %nwalkers
 
     fig, axs = plt.subplots(dimension, sharex='col')
     for i in range(dimension):
         ax = axs[i]
         for j in range(nwalkers):
-            ax.plot(c[:,:,j], c=next(COLOR_CYCLE), markersize=0.035, alpha=0.1)
+            ax.plot(all_samps[:,i,j], c=next(COLOR_CYCLE), markersize=0.035, alpha=0.1)
         ax.set_ylabel(params[i])
     plt.suptitle("Parallel Mark Chain On Normal Analytic Model\n "
                     "%s walkers used" % nwalkers)
@@ -62,10 +66,10 @@ def main():
     plt.savefig(file)
     plt.show()
 
-    c = mc.get_burn_samps
+    #c = mc.get_burn_samps
 
-    file = "GelmanRubin_%sdim_%swalkers_%ssteps" % (dimension, nwalkers, Nsteps)
-    mp.plot_gelman_rubin(c, file)
+    #file = "GelmanRubin_%sdim_%swalkers_%ssteps" % (dimension, nwalkers, Nsteps)
+    #mp.plot_gelman_rubin(c, file)
 
     return None
 

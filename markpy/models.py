@@ -79,6 +79,8 @@ class BaseModel(object):
             self.prior_stats = np.array(prior_stats)
             if self.prior_stats.shape != (2, self.dim):
                 raise ValueError("prior_stats must be of shape=(2, ndim)")
+        else:
+            self.prior_stats = None
 
 
         # Error check to make sure that the prior given must either be a single value of a ndim-D array

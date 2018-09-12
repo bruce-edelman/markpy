@@ -44,8 +44,8 @@ def main():
     mc = markpy.MarkChain(norm_model, dimension, sigmaprop)
 
     Nsteps = 40000
-    all_samps = mc.run(Nsteps, progress=True)
-    c = mc.get_burn_samps()
+    c = mc.run(Nsteps, progress=True, burn=True)
+
     chain = np.zeros([len(c[:,0]),len(c[0,:]),1])
     chain[:,:,0] = c
     markpy.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)

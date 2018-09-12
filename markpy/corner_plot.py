@@ -50,7 +50,7 @@ def corner_plot(chain, params, filename):
 
     # generate the plot and save it
     figure = corner.corner(data, labels=params,quantities=(0.05,0.90), levels=(1-np.exp(-0.5),), show_titles=True,
-                           title_kwargs={"fontsize": 12})
+                           title_kwargs = {"fontsize": 12})
 
     plt.suptitle('Corner Plot generated in markPy %s-d Sampling' % ndim)
     plt.savefig(filename)

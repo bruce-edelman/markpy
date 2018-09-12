@@ -135,22 +135,22 @@ def main():
 
     test_model = mp.NormModelInfer(sig, model_two, data, params)
     # now using the setup model we can create the chain using the mp.MarkChain class
-    mc = mp.MarkChain(test_model, len(params), sigprop, priorrange)
+    mc = mp.MarkChain(test_model, len(params), sigprop, priorrange=priorrange)
 
     # now we run the chain for Nsteps iterations
-    mc.run(Nsteps, data, t)
+    states = mc.run(Nsteps, data, t, thin=None, progress=True)
 
     # now we can interpret results with some plotting functions
-    plot_chains(mc.states) # plots the chain for each parameter (only one chain until paralleization)
+    plot_chains(states) # plots the chain for each parameter (only one chain until paralleization)
 
     # here we get the burned in samps using the mc.get_burn_samps() method
-    samps = mc.get_burn_samps()
+    #samps = mc.get_burn_samps()
 
     # now we plot the burned in chain for each parameters
-    plot_chains(samps)
+    #plot_chains(samps)
 
     # Lastly we plot the signal witht he 90% credible interval from our MCMC chain
-    plot_signal(mc, t, data)
+    plot_signal(states, t, data)
 
 
 def plot_chains(chain):
@@ -200,7 +200,7 @@ def plot_signal(mc, t, data):
     :param data: this is the array of data we observed to infer from
     :return: This function does not return anything but will show the plot via matplotlib (does not save plot)
     """
-
+    """
     # we first check to make sure that the chain is burned in
     if mc.is_burned_in:
         chain = mc.get_burn_samps()
@@ -209,14 +209,14 @@ def plot_signal(mc, t, data):
         # if chain is not burned in we return nothing and print statement notifying user
         print("CHAIN IS NOT BURNED IN YET PLEASE RUN FOR MORE ITERATIONS")
         return
-
+"""
     # intialize some data structures for 90% CI
     percentile5 = np.zeros(len(t))
     percentile95 = np.zeros(len(t))
 
     # find the confindence interval using the model function
     for time in t:
-        d = model_two(chain, data, time)
+        d = model_two(mc, data, time)
         percentile5[time] = np.percentile(d, 5)
         percentile95[time] = np.percentile(d, 95)
 
