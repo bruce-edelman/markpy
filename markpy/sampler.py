@@ -132,13 +132,14 @@ class MarkChain(object):
                     newsamp = self.stepper.proposal(self.oldsamp)
                     acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
 
-                    # now we return that samp from the generator
-                    yield [newsamp]
                     if acc:  # if we accepted a new value update for our AR
                         self.acc += 1
                     self.oldsamp = newsamp  # reset oldsamp variable for next iteration
                     # update the pbar
                     pbar.update(1)
+
+                    # now we return that samp from the generator
+                    yield [newsamp]
 
     @property
     def currentSamp(self):
