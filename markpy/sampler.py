@@ -24,8 +24,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-
-
 """
 This file Sets up the MarkChain object, used as our sampler in markpy
 """
@@ -40,7 +38,7 @@ class MarkChain(object):
 
     name = 'Metropolis-Hastings Chain'
 
-    def __init__(self, Model, d, sigprop, stepper=None, priorrange=None):
+    def __init__(self, Model, d, sigprop, stepper=None, priorrange=None, initial_state=None):
         """
         When a MarkChain object is called we pass these parameters. This object is the main sampler for the mcmc and
         contains many properties and methods useful to use:
@@ -52,6 +50,8 @@ class MarkChain(object):
         This must not have a subtype='base" just as the Model parameter
         :param priorrange: this is a numpy array of shape (ndim,2) that gives the min/max value of the allowed
         range for each of the sampling parameters
+        :param initial_state: Optional starting input parameter where we can give the initial state of the chain
+        must be an ndim array with the initial parameter value in order of the samp_params list in Model Object
         """
 
         # this needs to be an object of class Model and must have subtype != 'base'
@@ -77,10 +77,12 @@ class MarkChain(object):
         self.dim = d # dimension of our sampling
         self.N = None
 
-        # initlize our chain to be an array of array with the outer array being of shape (niter) (one right now) and
-        # the inner array is of shape (ndim)
-        self.states = [self.oldsamp] # initialize our output
-
+        # check if initial state is given:
+        if initial_state is not None:
+            if len(initial_state) != d:
+                raise IndexError("Length of initial_state must equal dimension of problem")
+            else:
+                self.oldsamp = [initial_state]
 
         # This needs to be an object isntance of a stepper class and must have subtype != 'Base'
         if stepper is None:
@@ -94,34 +96,49 @@ class MarkChain(object):
         # defaults to None and is None if the MarkChain is being operated alone
         self.number = None
 
-    def step(self, *args):
+    def step(self, n, thin=None, progress=None, *args):
         """
-        This function performs the Metropolis-Hastings algorithm step.
+        This is the step generator that will return the iterable samples of the markov chain
+        :param n: this is the number of iterations to run for
+        :param thin: this is a parameter that defaults to None, if we set it to a value then it will thin the mcmc by
+        that ratio, if None is given no thinning
+        :param progress:  defaults to False, if True will display  progress bar. Progress bar created as in:
+        github.com/dfm/emcee/emcee/pbar.py
         :param args: This are other args that are passed to the Model function used in the HastingsRatio func
-        :return: This function does not return anything just updates the chain attribute of states and acc
+        :return: This returns an iterable (since its a generator) should return an array that is shape=ndim
         """
 
-        # Use the stepper object to perform whatever kind of step we need
-        newsamp = self.stepper.proposal(self.oldsamp)
-        acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
+        # Check if we set thinning up or not
+        if thin is not None:
+            thin = int(thin)
+            # error check to make sure thin is not negative or 0
+            if thin <= 0:
+                raise ValueError("Thin must be strictly positive:")
+            intermediate_step = thin
+        else:
+            # if no thin set int_step=1
+            intermediate_step = 1
+        # set the total iterations for pbar
+        total = n * intermediate_step
 
-        # now we append the states with newsamp, if it was accepted newsamp is different than oldsamp, if not
-        # it is the same as self.oldsamp
-        self.states = np.append(self.states, [newsamp], axis=0) # add new value to our chain
+        # setup the progress bar
+        with progress_bar(progress, total) as pbar:
+            # loop through iterations
+            for _ in range(n):
+                # loop through our thinning procedure if necessary
+                for _ in range(intermediate_step):
 
-        if acc: # if we accepted a new value update for our AR
-            self.acc += 1
-        self.oldsamp = newsamp # reset oldsamp variable for next iteration
+                    # Use the stepper object to perform whatever kind of step we need
+                    newsamp = self.stepper.proposal(self.oldsamp)
+                    acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
 
-    @property
-    def currentState(self):
-        """
-        This is a property function of class MarkChain to get the current state
-        :return: return the attribute self.states which has shape (ndim, niter_current) where niter_current
-        is the number of iterations we have been through in the chain at this time
-        """
-        # function returns current sates of the chain
-        return self.states
+                    # now we return that samp from the generator
+                    yield [newsamp]
+                    if acc:  # if we accepted a new value update for our AR
+                        self.acc += 1
+                    self.oldsamp = newsamp  # reset oldsamp variable for next iteration
+                    # update the pbar
+                    pbar.update(1)
 
     @property
     def currentSamp(self):
@@ -160,34 +177,36 @@ class MarkChain(object):
         # function return the acceptence ratio of the chain
         return 1.*self.acc/self.N
 
-    @property
-    def is_burned_in(self):
+
+    def is_burned_in(self, samps):
         """
         this is a property function that checks to see if the chain is currently burned in or not
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :return: this returns a bool that tells us if the chain is currently burned in. Thiis checks the burnin based on
         the nacl burnin routine later defined in this class methods.
         """
-        __, isb = self.burnin_nact()
+        __, isb = self.burnin_nact(samps)
         return isb
 
-    @property
-    def burn_idx(self):
+
+    def burn_idx(self, samps):
         """
         this is a property function that returns the index value where the chain becomes burned in if it is burned in
         and the last index if it is not burned in yet
-        :return:
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
+        :return: This function returns the index of when the chain is burned in
         """
         # check to see if it is burned in
         if self.is_burned_in:
             # if it is return the burn idx as expected
-            idx, __ = self.burnin_nact()
+            idx, __ = self.burnin_nact(samps)
             return idx
         else:
             # if it is not burned in let the user know and return the last index of the chain
             print("Chain is not burned in: Run for more iterations")
-            return len(self.states[:,0])
+            pass
 
-    def run(self, n, thin=None, progress=False, *args):
+    def run(self, n, thin=None, progress=False, burn=False, ind=False, *args):
         """
         This function is responsible for actually running the chain for however many steps:
         :param n: This is how many iterations we run the chain for
@@ -195,35 +214,31 @@ class MarkChain(object):
         that ratio, if None is given no thinning
         :param progress: defaults to False, if True will display  progress bar. Progress bar created as in:
         github.com/dfm/emcee/emcee/pbar.py
+        :param burn: bool to decide to return burn samps or just reg sampls defaults to reg
+        :param ind: bool to decide to return ind. samps or just reg. defaults to reg burn has priority over ind if both
+        are set to True
         :param args: this is needed to pass for the PDF model Class later in stepping forward
-        :return: this returns nothing
+        :returns: this returns an array of the samples of shape (samp, ndim)
         """
         # function called to run the chain, takes in N numbers of steps to run and
         # *args which depend on The model we set up
         # TODO: maybe figure a way to move this self.N def into __init__ but that will require some reworking of structure
         self.N = n
-
-        # now we use the step_mh method to step the chain forward N steps
-        if thin is not None:
-            thin = int(thin)
-            if thin <= 0:
-                raise ValueError("Thin must be strictly positive:")
-            intermediate_step = thin
+        results = None
+        for results in self.step(n,thin, progress, *args):
+            pass
+        if burn:
+            return self.get_burn_samps(results)
+        elif ind:
+            return self.get_independent_samps(results)
         else:
-            intermediate_step = 1
-        total = n * intermediate_step
-        with progress_bar(progress, total) as pbar:
-            i = 0
-            for _ in range(n):
-                for _ in range(intermediate_step):
-                    self.step(*args)
-            pbar.update(1)
-            i += 1
-        return None
+            return  results
 
-    def get_acl(self):
+
+    def get_acl(self, samps):
         """
         This function gets the auto-correlation length for each of the parameters as a function of interation
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :return: this returns a dictionary with key values as the names of each parameter and the value the
         acl as function of iteration for that parameter
         """
@@ -233,23 +248,24 @@ class MarkChain(object):
         # loop through each parameter
         for i in range(self.dim):
             # use the compute_acl function for each param
-            acl = compute_acl(self.states[:, i]) # compute for each param
+            acl = compute_acl(samps[:, i]) # compute for each param
             if np.isinf(acl.any()):
                 # if its inf then return the len of the chain
-                acl = len(self.states[:,i])
+                acl = len(samps[:,i])
             acls[self.model.params[i]] = acl
         return acls # returns a dictionary with key values of names the params and values if acl for each param
 
-    def burnin_nacl(self, nacls=10):
+    def burnin_nacl(self,samps, nacls=10):
         """
         This function evalutes if the chain is burned in yet via the nacl method (burned in if max acl of param* nacl <
         len(chain):
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :param nacls: defaults to 10 but this is how many max acls of iterations before we say its burned in at
         :return: and integer for the index where the chain burns in and a bool if the chain is currently burned in or
         not
         """
         # function to check if the chain is burned in via the nacls route
-        acl = self.get_acl()  # get acls
+        acl = self.get_acl(samps)  # get acls
         max_acl = 0
 
         # find the max acl for all the params
@@ -259,15 +275,16 @@ class MarkChain(object):
         burn_idx = nacls * max_acl
 
         # check if burned in
-        is_burned_in = burn_idx < len(self.states[:, 0])
+        is_burned_in = burn_idx < len(samps[:, 0])
         # returns abn int with index of where we burn in at and bool if if we are burnt in or not with current
         # input chain
         return int(burn_idx), is_burned_in
 
-    def burnin_nact(self, nacts=10):
+    def burnin_nact(self,samps, nacts=10):
         """
         This function evalutes if the chain is burned in yet via the nact method (burned in if estimated act*nacts <
         len(chain):
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :param nacts: defaults to 10 but this is how many max acts of iterations before we say its burned in at
         :return:and integer for the index where the chain burns in and a bool if the chain is currently burned in or
         not
@@ -276,49 +293,51 @@ class MarkChain(object):
         act = self.get_act()
         burn_idx = nacts*act
         # check if burned in
-        is_burned_in = burn_idx < len(self.states[:,0])
+        is_burned_in = burn_idx < len(samps[:,0])
         # returns abn int with index of where we burn in at and bool if if we are burnt in or not with current
         # input chain
         return int(burn_idx), is_burned_in
 
-    def get_burn_samps(self):
+    def get_burn_samps(self, samps):
         """
         This function returns the bunred in samples of the states in the chain
         As of right now it uses the burnin_nact() method of evaluating burnin but also the bunrin_nacl() method is
         available and want to add more in the future
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :return: this returns the sliced self.states with the not burned in part sliced off the beginning
         """
         # this function gets returns the states of the chain that are after the given burn_idx
         # (cuts off the not burned in part)
         # check if we are burned in
-        idx, isburn = self.burnin_nact()
+        idx, isburn = self.burnin_nact(samps)
         if isburn:
             #return only burned in states
-            return self.states[idx:,:]
+            return samps[idx:,:]
         else:
             #if not burned in print statement and return None
             raise ValueError("CHAIN NOT BURNED IN - burnin")
 
 
-    def get_independent_samps(self):
+    def get_independent_samps(self, samps):
         """
         This function returns the independent samples by computing first the correlation length of the chain
         then evaluating the burnin. It will slice off the max of (burnid, corrlength) to return only the independent
         samples. Prints error statemtent if the chain is not yet burned in
-        :return:
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
+        :return: This returns the independent samps that are remaining in samps
         """
         # function that returns the independent samples of the chain
         # first get the correlation length from the other classmethod
-        corrleng = self.get_corrlen()
+        corrleng = self.get_corrlen(samps)
 
         # now get burned in to make sure we add the two
-        burnid, isburned = self.burnin_nacl()
+        burnid, isburned = self.burnin_nacl(samps)
 
         # if we are burned in return the correct samps
         if isburned:
             # take the max of burnid, and corrlenght and slice it off
             corrleng = max(corrleng, burnid)
-            return self.states[corrleng:, :]
+            return samps[corrleng:, :]
         else:
             # otherwise print statement to tell user we are not burned in and return None
             raise ValueError("CHIAN NOT BURNED IN - corrlen")
@@ -337,16 +356,17 @@ class MarkChain(object):
 
         return 1.*len(ind_samps)/self.N
 
-    def plot_acls(self):
+    def plot_acls(self, samps):
         """
         this function is used in testing to plot the acls for each parameter
         TODO:  This needs polishing and prettying up the plot before release
         TODO: This needs changed to be independent of our dimensionality we choose for our chain
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :return: this returns nothing but will show the matplotlib plot of the acls for each param
         """
         # function to plot acls (mainly used in testing)
         # get the acls
-        acls = self.get_acl()
+        acls = self.get_acl(samps)
 
         # plot one for each of the dimensions (this may need fixed once we start doing other dimensions
         fig, axs = plt.subplots(self.dim, sharex='col')
@@ -356,14 +376,15 @@ class MarkChain(object):
         plt.show()
         return None
 
-    def get_corrlen(self):
+    def get_corrlen(self, samps):
         """
         This is a method function for computing the correlation length of the chain to be used in returning the
         independent samples
+        :param samps: This takes in samps for a chain. must be shape (niter, ndim)
         :return: this returns and integer that is the longest correlation legnth for each of the parameters
         """
         # function that gets the correlation lenght to be used in returning independent samples
-        acls = self.get_acl()
+        acls = self.get_acl(samps)
 
         # intialize ct to 0
         ct = 0
@@ -433,7 +454,6 @@ class ParallelMarkChain(object):
             range for each of the sampling parameters
             :param sigprop: this is the std-dev of the proposal step
             """
-            self.states = None
             self.nchains = nchains
             self.chains = []
             self.dim = d
@@ -441,135 +461,48 @@ class ParallelMarkChain(object):
                 chain = MarkChain(PDF, d, sigprop, priorrange)
                 chain.number = i
                 self.chains.append(chain)
-
-    def run(self, n, thin=None, progress=True, *args):
+    def run(self, n, thin=None, progress=False, burn=False, ind=False, mean=False, *args):
         """
-        This function is responsible for actually runnning all the chains at same time for however many steps:
-        :param n: This is how many interations we run the chain for
+        This function is responsible for actually running the chain for however many steps:
+        :param n: This is how many iterations we run the chain for
         :param thin: this is a parameter that defaults to None, if we set it to a value then it will thin the mcmc by
         that ratio, if None is given no thinning
         :param progress: defaults to False, if True will display  progress bar. Progress bar created as in:
         github.com/dfm/emcee/emcee/pbar.py
+        :param burn: bool to decide to return burn samps or just reg sampls defaults to reg
+        :param ind: bool to decide to return ind. samps or just reg. defaults to reg burn has priority over ind if both
+        are set to True
+        :param mean: defaults to False, If True will avearge over nchains for samples
         :param args: this is needed to pass for the PDF model Class later in stepping forward
-        :return: this returns nothing
+        :returns: this returns an array of the samples of shape (samp, nchains, ndim)
         """
-
-        # now we use the step_mh method to step the chain forward N steps
-        if thin is not None:
-            thin = int(thin)
-            if thin <= 0:
-                raise ValueError("Thin must be strictly positive:")
-            intermediate_step = thin
-        else:
-            intermediate_step = 1
-        total = n * intermediate_step
-        with progress_bar(progress, total) as pbar:
-            i = 0
-            for _ in range(n):
-                for _ in range(intermediate_step):
-                    for i in self.chains:
-                        i.N = n
-                        i.step(*args)
-
-            pbar.update(1)
-            i += 1
-        return None
-
-
-    @property
-    def get_states(self):
-        """
-                propertyt function to return the states of each of the chains used in our parallel markchain object
-                :return: returns a numpy array states of shape (niter, ndim, nchains)
-        """
-
-        # Error check to make sure we ran the chain before generating states
-        if self.states is None:
-            raise ValueError("ParallelMarkChain has not been ran yet:")
-
-        # get the states out of each chain we have
-        for i in range(self.nchains):
-            self.states[:, :, i] = self.chains[i].states
-
-        return self.states
-
-
-    @property
-    def get_burn_samps(self):
-        """
-        This is a property fct that will return the burned in states for each independent chain we use
-        to keep each chain the same size we take the max burn id from each chain and cut that off from each chain
-        when returning the burned in samps
-        :return: this returns the burned in samps of shape (niter-max(burnids), ndim, nchains)
-        """
-
-        # Intialize list to store burn idxs for each chain
-        burnids = []
-
-        # loop through each chain
+        parallel_samps = []
         for i in self.chains:
-            # if a single chain is not burned in we raise an error and tell user to run the chains for longer
-            if not i.is_burned_in:
-                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
+            parallel_samps.append([i.run(n, thin, progress, burn, ind, *args)])
+        if mean:
+            return self.get_mean_states(np.array([parallel_samps]))
+        else:
+            return parallel_samps
 
-            # add in the next chains burn idx to the list
-            burnids.append(i.burn_idx)
-        self.states = self.get_states
-        # return the states with max(burnids) samples sliced off
-        return self.states[max(burnids):, :, :]
-
-    @property
-    def get_mean_states(self):
+    def get_mean_states(self, samps):
         """
-            propertyt function to return the states of the mean of the chains used in our parallel markchain object
+            function to return the states of the mean of the chains used in our parallel markchain object
+            :param samps: arrays of data of shape (niter, nchains, ndim)
             :return: returns a numpy array states of shape (niter, ndim)
         """
 
-        # Error check to make sure we ran the chain before generating states
-        if self.states is None:
-            raise ValueError("ParallelMarkChain has not been ran yet:")
-
+        niter, nchains, ndim = samps.shape
         # initialize the means array
-        means = np.zeros([len(self.chains[0].states[:, 0]), self.dim])
+        means = np.zeros([niter, ndim])
 
-        # get the states out of each chain we have
-        for i in range(self.nchains):
-            self.states[:, :, i] = self.chains[i].states
 
         # get the means out
-        for i in range(self.dim):
-            for j in range(len(self.chains[0].states[:,i])):
-                means[j,i] = np.mean(self.states[j,i,:])
+        for i in range(ndim):
+            for j in range(niter):
+                means[j,i] = np.mean(samps[j,:,i])
 
         # return the means
         return means
-
-    @property
-    def get_mean_burn_samps(self):
-        """
-            This is a property fct that will return the mean burned in states of the independent chains we use
-            to keep each chain the same size we take the max burn id from each chain and cut that off from each chain
-            when returning the burned in samps
-            :return: this returns the burned in samps of shape (niter-max(burnids), ndim, nchains)
-        """
-
-        # Intialize list to store burn idxs for each chain
-        burnids = []
-
-        # loop through each chain
-        for i in self.chains:
-            # if a single chain is not burned in we raise an error and tell user to run the chains for longer
-            if not i.is_burned_in:
-                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
-
-            # add in the next chains burn idx to the list
-            burnids.append(i.burn_idx)
-
-        # get the means
-        samps = self.get_mean_states
-
-        # return the means with max(burnids) samples sliced off
-        return samps[max(burnids):, :]
 
     @property
     def get_chain_acceptence_ratios(self):

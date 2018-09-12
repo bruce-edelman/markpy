@@ -46,11 +46,10 @@ def main():
     norm_model = mp.NormModelAnalytic(params, sigs, means, prior_stats=stats)
     mc = mp.ParallelMarkChain(nwalkers,norm_model, dimension, sigmaprop)
 
-    Nsteps = 100000
-    mc.run(Nsteps)
-    c = mc.get_burn_samps
-    # file = "Parallel_test_%swalkers.png" %nwalkers
-    """
+    Nsteps = 50000
+    all_samps = mc.run(Nsteps, progress=True, thin=10)
+    file = "Parallel_test_%swalkers.png" %nwalkers
+
     fig, axs = plt.subplots(dimension, sharex='col')
     for i in range(dimension):
         ax = axs[i]
@@ -62,7 +61,8 @@ def main():
     plt.xlabel("Iteration")
     plt.savefig(file)
     plt.show()
-    """
+
+    c = mc.get_burn_samps
 
     file = "GelmanRubin_%sdim_%swalkers_%ssteps" % (dimension, nwalkers, Nsteps)
     mp.plot_gelman_rubin(c, file)

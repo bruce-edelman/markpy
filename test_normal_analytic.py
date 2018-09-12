@@ -44,11 +44,11 @@ def main():
     mc = markpy.MarkChain(norm_model, dimension, sigmaprop)
 
     Nsteps = 40000
-    mc.run(Nsteps)
+    all_samps = mc.run(Nsteps, progress=True)
     c = mc.get_burn_samps()
     chain = np.zeros([len(c[:,0]),len(c[0,:]),1])
     chain[:,:,0] = c
-    #mp.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
+    markpy.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
     file = 'geweke_test_normal_analytic_%s-d.png' % dimension
     markpy.plot_geweke(chain, 80, file)
     return None
