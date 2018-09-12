@@ -44,6 +44,6 @@ setup(
     author='Bruce Edelman',  # Optional
     author_email='bedelman@uoregon.edu',  # Optional
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
-    install_requires=['numpy', 'scipy', 'matplotlib', 'corner'],  # Optional
+    install_requires=['numpy', 'scipy', 'matplotlib', 'corner', 'tqdm'],  # Optional
 
 )

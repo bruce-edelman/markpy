@@ -3,4 +3,5 @@ scipy
 matplotlib
 python_version > 2.6 or python_version > 3.5
 corner
+tqdm
 

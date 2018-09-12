@@ -18,9 +18,12 @@
 markPy is a python package developed by Bruce Edelman to implement MCMC sampling among other things
 
 """
-import steppers
+from .pbar import *
+from .steppers import *
 import numpy as np
 import matplotlib.pyplot as plt
+
+
 
 
 """
@@ -81,7 +84,7 @@ class MarkChain(object):
 
         # This needs to be an object isntance of a stepper class and must have subtype != 'Base'
         if stepper is None:
-            stepper = steppers.MetropolisHastings
+            stepper = MetropolisHastings
         if stepper.subtype == 'Base':
             raise TypeError("Stepper Parameter in MarkChain Must be a Stepper Class created in steppers.py that does not"
                             "have subtype of Base")
@@ -184,10 +187,14 @@ class MarkChain(object):
             print("Chain is not burned in: Run for more iterations")
             return len(self.states[:,0])
 
-    def run(self, n, *args):
+    def run(self, n, thin=None, progress=False, *args):
         """
-        This function is responsible for actually runnning the chain for however many steps:
-        :param n: This is how many interations we run the chain for
+        This function is responsible for actually running the chain for however many steps:
+        :param n: This is how many iterations we run the chain for
+        :param thin: this is a parameter that defaults to None, if we set it to a value then it will thin the mcmc by
+        that ratio, if None is given no thinning
+        :param progress: defaults to False, if True will display  progress bar. Progress bar created as in:
+        github.com/dfm/emcee/emcee/pbar.py
         :param args: this is needed to pass for the PDF model Class later in stepping forward
         :return: this returns nothing
         """
@@ -197,10 +204,21 @@ class MarkChain(object):
         self.N = n
 
         # now we use the step_mh method to step the chain forward N steps
-        # TODO: maybe add a submodule that holds classes of steppers (MH, KDE, etc) and there we can add different types
-        # TODO: of moves rather than only the metropolis hastings stepper
-        for i in range(n):
-            self.step(*args)
+        if thin is not None:
+            thin = int(thin)
+            if thin <= 0:
+                raise ValueError("Thin must be strictly positive:")
+            intermediate_step = thin
+        else:
+            intermediate_step = 1
+        total = n * intermediate_step
+        with progress_bar(progress, total) as pbar:
+            i = 0
+            for _ in range(n):
+                for _ in range(intermediate_step):
+                    self.step(*args)
+            pbar.update(1)
+            i += 1
         return None
 
     def get_acl(self):
@@ -317,11 +335,6 @@ class MarkChain(object):
         # get the independent samps
         ind_samps = self.get_independent_samps()
 
-        # check if burned in
-        if ind_samps is None:
-            # if we are not burned in only return the regular acceptence ratio not the effective
-            print("CHAIN NOT BURNED IN: RETURNING REGULAR ACCEPTENCE RATIO")
-            return self.AcceptenceRatio()
         return 1.*len(ind_samps)/self.N
 
     def plot_acls(self):
@@ -429,27 +442,39 @@ class ParallelMarkChain(object):
                 chain.number = i
                 self.chains.append(chain)
 
-    def run(self, n, *args):
+    def run(self, n, thin=None, progress=True, *args):
         """
         This function is responsible for actually runnning all the chains at same time for however many steps:
         :param n: This is how many interations we run the chain for
+        :param thin: this is a parameter that defaults to None, if we set it to a value then it will thin the mcmc by
+        that ratio, if None is given no thinning
+        :param progress: defaults to False, if True will display  progress bar. Progress bar created as in:
+        github.com/dfm/emcee/emcee/pbar.py
         :param args: this is needed to pass for the PDF model Class later in stepping forward
         :return: this returns nothing
         """
 
         # now we use the step_mh method to step the chain forward N steps
-        # TODO: maybe add a submodule that holds classes of steppers (MH, KDE, etc) and there we can add different types
-        # TODO: of moves rather than only the metropolis hastings stepper
+        if thin is not None:
+            thin = int(thin)
+            if thin <= 0:
+                raise ValueError("Thin must be strictly positive:")
+            intermediate_step = thin
+        else:
+            intermediate_step = 1
+        total = n * intermediate_step
+        with progress_bar(progress, total) as pbar:
+            i = 0
+            for _ in range(n):
+                for _ in range(intermediate_step):
+                    for i in self.chains:
+                        i.N = n
+                        i.step(*args)
 
-        # loop through the number of steps
-        for step in range(n):
-            # for each step take one step for each chain
-            for i in self.chains:
-                i.N = n
-                # take the metropolis-hastings step with this chain
-                i.step(*args)
-        self.states = np.zeros([n+1, self.dim, self.nchains])
+            pbar.update(1)
+            i += 1
         return None
+
 
     @property
     def get_states(self):
@@ -545,3 +570,29 @@ class ParallelMarkChain(object):
 
         # return the means with max(burnids) samples sliced off
         return samps[max(burnids):, :]
+
+    @property
+    def get_chain_acceptence_ratios(self):
+        """
+        This is a property function that will return an array of the acceptence ratios for each of the chains
+        :return: this returns an array of length = nchains that has the acceptence ratio for each chain
+        """
+        AR = []
+        for i in self.chains:
+            if not i.is_burned_in:
+                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
+            AR.append(i.AcceptenceRatio)
+        return np.array(AR)
+
+    @property
+    def get_chain_effective_acceptence_ratios(self):
+        """
+        This is a property function that will return an array of the effective acceptence ratios for each of the chains
+        :return: this returns an array of length = nchains that has the effective acceptence ratio for each chain
+        """
+        eAR = []
+        for i in self.chains:
+            if not i.is_burned_in:
+                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
+            eAR.append(i.get_effective_AR)
+        return np.array(eAR)
