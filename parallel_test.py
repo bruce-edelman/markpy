@@ -48,7 +48,7 @@ def main():
     mc = mp.ParallelMarkChain(nwalkers,norm_model, dimension, sigmaprop)
 
     Nsteps = 50000
-    all_samps = mc.run(Nsteps, progress=True, thin=10)
+    all_samps = mc.run(Nsteps, progress=True, thin=10, verbose=True)
     print(all_samps.shape)
 
     
