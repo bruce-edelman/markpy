@@ -126,7 +126,7 @@ class MarkChain(object):
             intermediate_step = 1
         # set the total iterations for pbar
         total = n * intermediate_step
-
+        newsamp = self.oldsamp
         # setup the progress bar
         if self.number is None: # check if this is being used in ParallelMark Chain object
             with progress_bar(progress, total) as pbar:
@@ -230,7 +230,7 @@ class MarkChain(object):
             print("Chain is not burned in: Run for more iterations")
             pass
 
-    def run(self, n, thin=None, progress=False, burn=False, ind=False, pbar=None, *args):
+    def run(self, n, *args, thin=None, progress=False, burn=False, ind=False, pbar=None):
         """
         This function is responsible for actually running the chain for however many steps:
         :param n: This is how many iterations we run the chain for

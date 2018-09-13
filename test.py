@@ -92,6 +92,11 @@ def model_exp(samp, data, t):
     """
     return samp[0]*np.cos(samp[1]*t+samp[2])
 
+def model(A, f, phi, data, t):
+    return A*np.cos(f*t+phi)
+
+def model2(A, f, phi, A2, f2, phi2, data, t):
+    return A*np.cos(f*t+phi) + A2*np.sin(f2*t+phi2)
 
 def model_two(samp, data, t):
     """
@@ -133,15 +138,15 @@ def main():
     #liklie = mp.LiklieNorm(model_two, mean, sig, data)
     #test_model = mp.BaseModel(model_two, data, sig, D, params, liklie)
 
-    test_model = mp.NormModelInfer(sig, model_two, data, params)
+    test_model = mp.NormModelInfer(sig, model_exp, data, params)
     # now using the setup model we can create the chain using the mp.MarkChain class
     mc = mp.MarkChain(test_model, len(params), sigprop, priorrange=priorrange)
 
     # now we run the chain for Nsteps iterations
-    states = mc.run(Nsteps, data, t, thin=None, progress=True)
+    states = mc.run(Nsteps, data, t, thin=None, progress=True, ind=True)
 
     # now we can interpret results with some plotting functions
-    plot_chains(states) # plots the chain for each parameter (only one chain until paralleization)
+    #plot_chains(states) # plots the chain for each parameter (only one chain until paralleization)
 
     # here we get the burned in samps using the mc.get_burn_samps() method
     #samps = mc.get_burn_samps()
@@ -216,7 +221,7 @@ def plot_signal(mc, t, data):
 
     # find the confindence interval using the model function
     for time in t:
-        d = model_two(mc, data, time)
+        d = model2(mc[:,0], mc[:,1], mc[:,2], mc[:,3], mc[:,4], mc[:,5], data, time)
         percentile5[time] = np.percentile(d, 5)
         percentile95[time] = np.percentile(d, 95)
 
