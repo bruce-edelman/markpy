@@ -97,7 +97,7 @@ class MarkChain(object):
         # defaults to None and is None if the MarkChain is being operated alone
         self.number = None
 
-    def step(self, n, thin=None, progress=None, pbar=None, *args):
+    def step(self, n, pbar, thin=None, progress=None, *args):
         """
         This is the step generator that will return the iterable samples of the markov chain as it evolves
 
@@ -159,8 +159,7 @@ class MarkChain(object):
                         self.acc += 1
                     self.oldsamp = newsamp  # reset oldsamp variable for next iteration
                     # update that inherited pbar
-                    if pbar is not None:
-                        pbar.update(1)
+                    pbar.update(1)
                 # now we return that samp from the generator
                 yield np.array(newsamp)
 
@@ -230,7 +229,7 @@ class MarkChain(object):
             print("Chain is not burned in: Run for more iterations")
             pass
 
-    def run(self, n, *args, thin=None, progress=False, burn=False, ind=False, pbar=None):
+    def run(self, n, thin=None, progress=False, pbar=None, *args):
         """
         This function is responsible for actually running the chain for however many steps:
         :param n: This is how many iterations we run the chain for
@@ -238,9 +237,6 @@ class MarkChain(object):
         that ratio, if None is given no thinning
         :param progress: defaults to False, if True will display  progress bar. Progress bar created as in:
         github.com/dfm/emcee/emcee/pbar.py
-        :param burn: bool to decide to return burn samps or just reg sampls defaults to reg
-        :param ind: bool to decide to return ind. samps or just reg. defaults to reg burn has priority over ind if both
-        are set to True
         :param pbar: if using the parallel markchain it will pass a progress bar object from tqdm here to get sent to step fct
         :param args: this is needed to pass for the PDF model Class later in stepping forward
         :returns: this returns an array of the samples of shape (samp, ndim)
@@ -253,17 +249,10 @@ class MarkChain(object):
         samps = np.zeros([n, self.dim])
         ct = 0
         # use our step generator to get out the results
-        for results in self.step(n,thin, progress,pbar, *args):
+        for results in self.step(n,pbar, thin, progress, *args):
             samps[ct,:] = results
             ct += 1
-
-        # input logic to decide what we want returned
-        if burn:
-            return self.get_burn_samps(samps)
-        elif ind:
-            return self.get_independent_samps(samps)
-        else:
-            return  samps
+        return samps
 
 
     def get_acl(self, samps):
@@ -494,7 +483,6 @@ class ParallelMarkChain(object):
                 chain.number = i
                 self.chains.append(chain)
 
-
     def run(self, n, thin=None, progress=False, burn=False, ind=False, mean=False, verbose=False, *args):
         """
         This function is responsible for actually running the chain for however many steps:
@@ -523,12 +511,25 @@ class ParallelMarkChain(object):
             if thin <= 0:
                 raise ValueError("thin value must be strictly positive")
             total *= thin
-
+        out = None
         # setup progress bar
         with progress_bar(progress, total) as pbar:
             # run each chain for given amount and store the results
             for i in self.chains:
-                parallel_samps[:,:,i.number] = i.run(n, thin, progress, burn, ind, pbar, *args)
+                parallel_samps[:,:,i.number] = i.run(n, thin, progress, pbar, *args)
+                if burn:
+                    for j in self.chains:
+                        burn_samps = j.get_burn_samps(parallel_samps[:,:,j.number])
+                        out = np.zeros([len(burn_samps),self.dim, self.nchains])
+                        out[:,:,i.number] = burn_samps
+                elif ind:
+                    for k in self.chains:
+                        ind_samps = k.get_independent_samps(parallel_samps[:,:,k.number])
+                        out = np.zeros([len(ind_samps), self.dim, self.nchains])
+                        out[:,:,k.number] = ind_samps
+                else:
+                    out = parallel_samps
+
         if verbose:
             # these are the verbose outputs for extra information about runtime
             end_time = datetime.datetime.now()
@@ -538,9 +539,9 @@ class ParallelMarkChain(object):
             print("Average Step / sec : %.3f" % float(total/time_elapsed))
         if mean:
             # check if we want mean samps or all of the samps
-            return self.get_mean_states(parallel_samps)
+            return self.get_mean_states(out)
         else:
-            return parallel_samps
+            return out
 
     def get_mean_states(self, samps):
         """

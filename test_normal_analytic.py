@@ -49,7 +49,7 @@ def main():
     chain = np.zeros([len(c[:,0]),len(c[0,:]),1])
     chain[:,:,0] = c
     markpy.corner_plot(chain, params, 'norm_analytic_%s-d.png' % dimension)
-    file = 'geweke_test_normal_analytic_%s-d.png' % dimension
+    file = '~PycharmProjects/markPy/test_plots/geweke_test_normal_analytic_%s-d.png' % dimension
     markpy.plot_geweke(chain, 80, file)
     return None
 

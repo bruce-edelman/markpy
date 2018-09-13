@@ -47,29 +47,29 @@ def main():
     norm_model = mp.NormModelAnalytic(params, sigs, means, prior_stats=stats)
     mc = mp.ParallelMarkChain(nwalkers,norm_model, dimension, sigmaprop)
 
-    Nsteps = 50000
+    Nsteps = 500000
     all_samps = mc.run(Nsteps, progress=True, thin=10, verbose=True)
-    print(all_samps.shape)
-
+    #print(all_samps.shape)
+    #
     
-    file = "Parallel_test_%swalkers.png" %nwalkers
-
-    fig, axs = plt.subplots(dimension, sharex='col')
-    for i in range(dimension):
-        ax = axs[i]
-        for j in range(nwalkers):
-            ax.plot(all_samps[:,i,j], c=next(COLOR_CYCLE), markersize=0.035, alpha=0.1)
-        ax.set_ylabel(params[i])
-    plt.suptitle("Parallel Mark Chain On Normal Analytic Model\n "
-                    "%s walkers used" % nwalkers)
-    plt.xlabel("Iteration")
-    plt.savefig(file)
-    plt.show()
+    # file = "~PycharmProjects/markPy/test_plots/Parallel_test_%swalkers.png" %nwalkers
+    #
+    # fig, axs = plt.subplots(dimension, sharex='col')
+    # for i in range(dimension):
+    #     ax = axs[i]
+    #     for j in range(nwalkers):
+    #         ax.plot(all_samps[:,i,j], c=next(COLOR_CYCLE), markersize=0.035, alpha=0.1)
+    #     ax.set_ylabel(params[i])
+    # plt.suptitle("Parallel Mark Chain On Normal Analytic Model\n "
+    #                 "%s walkers used" % nwalkers)
+    # plt.xlabel("Iteration")
+    # plt.savefig(file)
+    # plt.show()
 
     #c = mc.get_burn_samps
 
-    #file = "GelmanRubin_%sdim_%swalkers_%ssteps" % (dimension, nwalkers, Nsteps)
-    #mp.plot_gelman_rubin(c, file)
+    file = "GelmanRubin_%sdim_%swalkers_%ssteps.png" % (dimension, nwalkers, Nsteps)
+    mp.plot_gelman_rubin(all_samps, file)
 
     return None
 
