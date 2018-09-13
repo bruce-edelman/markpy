@@ -74,6 +74,7 @@ class MarkChain(object):
             self.oldsamp = np.array([np.random.uniform(self.priorrange[i][0],self.priorrange[i][1]) for i in range(d)])
 
         # this variable will store the number of accepted samples
+        self.accept_frac = []
         self.acc = 0
         self.dim = d # dimension of our sampling
         self.N = None
@@ -146,7 +147,7 @@ class MarkChain(object):
                         pbar.update(1)
 
                     # now we return that samp from the generator
-                    yield np.array(newsamp)
+                    yield np.array(newsamp), acc
         else: # if it is being used dont create its own pbar, use the inherited one
             # loop through iterations
             for _ in range(n):
@@ -161,7 +162,7 @@ class MarkChain(object):
                     # update that inherited pbar
                     pbar.update(1)
                 # now we return that samp from the generator
-                yield np.array(newsamp)
+                yield np.array(newsamp), acc
 
     @property
     def currentSamp(self):
@@ -199,6 +200,16 @@ class MarkChain(object):
         """
         # function return the acceptence ratio of the chain
         return 1.*self.acc/self.N
+
+
+    @property
+    def AcceptenceFraction(self):
+        """
+        This is a property function that returns the acceptence fraction as an array of shape (niterations)
+        This stores the fraction of accepted samples at each iteration along the chain
+        :return: numpy array of shape and detail listed above
+        """
+        return self.accept_frac
 
 
     def is_burned_in(self, samps):
@@ -248,9 +259,13 @@ class MarkChain(object):
         # initialize variables for generating the states
         samps = np.zeros([n, self.dim])
         ct = 0
+        accepted = 0
         # use our step generator to get out the results
-        for results in self.step(n,pbar, thin, progress, *args):
+        for results, acc in self.step(n,pbar, thin, progress, *args):
             samps[ct,:] = results
+            if acc:
+                accepted += 1
+            self.accept_frac.append(float(accepted/ct))
             ct += 1
         return samps
 
@@ -512,6 +527,7 @@ class ParallelMarkChain(object):
                 raise ValueError("thin value must be strictly positive")
             total *= thin
         out = None
+        chain_st_time = datetime.datetime.now()
         # setup progress bar
         with progress_bar(progress, total) as pbar:
             # run each chain for given amount and store the results
@@ -534,7 +550,6 @@ class ParallelMarkChain(object):
             # these are the verbose outputs for extra information about runtime
             end_time = datetime.datetime.now()
             time_elapsed = round(time.clock() - start_time, 2)
-            chain_st_time = datetime.datetime.now()
             print("START TIME: %s \nEND TIME: %s \nTIME ELAPSED: %.2f sec" %(chain_st_time, end_time, time_elapsed))
             print("Average Step / sec : %.3f" % float(total/time_elapsed))
         if mean:
