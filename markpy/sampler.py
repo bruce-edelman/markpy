@@ -209,7 +209,7 @@ class MarkChain(object):
         This stores the fraction of accepted samples at each iteration along the chain
         :return: numpy array of shape and detail listed above
         """
-        return self.accept_frac
+        return np.array(self.accept_frac)
 
 
     def is_burned_in(self, samps):
@@ -603,3 +603,17 @@ class ParallelMarkChain(object):
                 raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
             eAR.append(i.get_effective_AR)
         return np.array(eAR)
+
+    @property
+    def get_acceptence_fraction(self):
+        """
+        NEEDS COMMENTING
+        :return:
+        """
+        acc = []
+        for i in self.chains:
+            acc.append([i.AcceptenceFraction])
+        return np.mean(acc, axis=1)
+
+
+
