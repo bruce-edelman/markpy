@@ -74,7 +74,7 @@ class MarkChain(object):
             self.oldsamp = np.array([np.random.uniform(self.priorrange[i][0],self.priorrange[i][1]) for i in range(d)])
 
         # this variable will store the number of accepted samples
-        self.accept_frac = []
+        self.accepted = []
         self.acc = 0
         self.dim = d # dimension of our sampling
         self.N = None
@@ -203,13 +203,13 @@ class MarkChain(object):
 
 
     @property
-    def AcceptenceFraction(self):
+    def AcceptenceArray(self):
         """
-        This is a property function that returns the acceptence fraction as an array of shape (niterations)
-        This stores the fraction of accepted samples at each iteration along the chain
+        This is a property function that returns the acceptence array as an array of shape (niterations)
+        This stores the bool of each iteration step if it was accepted or not
         :return: numpy array of shape and detail listed above
         """
-        return np.array(self.accept_frac)
+        return np.array(self.accepted)
 
 
     def is_burned_in(self, samps):
@@ -259,13 +259,10 @@ class MarkChain(object):
         # initialize variables for generating the states
         samps = np.zeros([n, self.dim])
         ct = 0
-        accepted = 0
         # use our step generator to get out the results
         for results, acc in self.step(n,pbar, thin, progress, *args):
             samps[ct,:] = results
-            if acc:
-                accepted += 1
-            self.accept_frac.append(float(accepted/ct))
+            self.accepted.append(acc)
             ct += 1
         return samps
 
@@ -512,7 +509,7 @@ class ParallelMarkChain(object):
         :param mean: defaults to False, If True will avearge over nchains for samples
         :param verbose: if set to true will give more stats on the mcmc as it finishes
         :param args: this is needed to pass for the PDF model Class later in stepping forward
-        :returns: this returns an array of the samples of shape (samp, nchains, ndim)
+        :returns: this returns an array of the samples of shape (samp, ndim, nchains)
         """
         # intialize data structure
         parallel_samps = np.zeros([n, self.dim, self.nchains])
@@ -605,15 +602,24 @@ class ParallelMarkChain(object):
         return np.array(eAR)
 
     @property
-    def get_acceptence_fraction(self):
+    def AcceptenceFraction(self):
         """
         NEEDS COMMENTING
         :return:
         """
-        acc = []
         for i in self.chains:
-            acc.append([i.AcceptenceFraction])
-        return np.mean(acc, axis=1)
+            if not i.is_burned_in:
+                raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
+
+        iterations = len(self.chains[0].accepted)
+        a = np.zeros([iterations])
+        for ct in range(iterations):
+            temp = 0
+            for i in self.chains:
+                temp += i.accepted[ct]
+            a[ct] = temp / self.nchains
+        return a
+
 
 
 
