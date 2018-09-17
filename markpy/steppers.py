@@ -149,18 +149,43 @@ class GibbsStepper(MetropolisHastings):
     subtype = 'stepper'
 
     def __init__(self, sigma, model, dim, priorrange, **kwargs):
+        """
+        This is same as in The metroppolis-hastings stepper but does a simple error check to make sure the problem is
+        multi-variate
+        :param sigma: this sigma for the gaussain proposal
+        :param model: the model used (Model Object)
+        :param dim: dimension of problem
+        :param priorrange: priorrange passed from MarkChain
+        :param kwargs: other args needed later (addded in Base maybe)
+        """
 
+        # Check to make sure it is multi-dimensional
         if dim < 2:
             raise ValueError("Problem must be multivariate to implement Gibbs Sampling")
 
+        # inherit rest from MHstepper and BaseStepper
         super(GibbsStepper, self).__init__(sigma, model, dim, priorrange, **kwargs)
 
     def proposal(self, samp, *args):
+        """
+        This is the overridden proposal function for the Gibbs sampler (uses the same decide function)
+        :param samp: sample we are at (point in parameter space)
+        :param args: args needed to be passed to our model function (and decide function)
+        :return: returns the proposed next step after performing the individual parameter sampling here which
+        is the core of Gibbs Sampling
+        """
+        # Initialize
         prop_samp = samp
+
+        # loop through each parameter
         for i in range(self.dim):
+            # propose with np.random.normal around the given parameter we sample from
             prop_samp[i] = samp[i] + np.random.normal(0., self.sigmaprop)
-            acc, newsamp = self.decide(prop_samp, samp, *args)
-            prop_samp = newsamp
+            # decide wheter to accept or not then go to next sample
+            acc, prop_samp = self.decide(prop_samp, samp, *args)
+
+        # return the sampled vector
+        return prop_samp
 
 
 
