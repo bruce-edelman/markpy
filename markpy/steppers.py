@@ -139,3 +139,28 @@ class MetropolisHastings(BaseStepper):
             prob = newp[0] / oldp[0]
             acc = np.random.choice([True, False], p=[prob, 1. - prob])
             return acc, acc * newsamp + (1. - acc) * oldsamp
+
+
+class GibbsStepper(MetropolisHastings):
+    """
+    This is a classs that is resonsible for  the stepper that will implplement Gibbs Sampling for MarkPy
+    """
+    name = 'GibbsStepper'
+    subtype = 'stepper'
+
+    def __init__(self, sigma, model, dim, priorrange, **kwargs):
+
+        if dim < 2:
+            raise ValueError("Problem must be multivariate to implement Gibbs Sampling")
+
+        super(GibbsStepper, self).__init__(sigma, model, dim, priorrange, **kwargs)
+
+    def proposal(self, samp, *args):
+        prop_samp = samp
+        for i in range(self.dim):
+            prop_samp[i] = samp[i] + np.random.normal(0., self.sigmaprop)
+            acc, newsamp = self.decide(prop_samp, samp, *args)
+            prop_samp = newsamp
+
+
+

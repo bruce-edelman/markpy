@@ -476,22 +476,29 @@ class ParallelMarkChain(object):
     """
     name = 'ParallelMarkChain'
 
-    def __init__(self, nchains, PDF, d, sigprop, priorrange=None):
+    def __init__(self, nchains, PDF, d, sigprop, priorrange=None, initial_states=None):
             """
             This is the intialization function of the parallel markchain wrapper class the run mutlple mcmc chains
             :param PDF: This needs to be an instance of the Model class which has a method get_posterior, and also
             stores the sampling parameter names
             :param d: this is the dimensionality of our chain
+            :param sigprop: this is the std-dev of the proposal step
             :param priorrange: this is a numpy array of shape (ndim,2) that gives the min/max value of the allowed
             range for each of the sampling parameters
-            :param sigprop: this is the std-dev of the proposal step
+            :param initial_states: This is optional if we want to start with an initial states given . Must be of shape
+            (ndim, nchains)
+
             """
+
             self.nchains = nchains
             self.chains = []
             self.dim = d
             # Create an array of MarkChain objects and set each to have an ordered number attribute
             for i in range(self.nchains):
-                chain = MarkChain(PDF, d, sigprop, priorrange)
+                if initial_states is not None:
+                    chain = MarkChain(PDF, d, sigprop, priorrange, initial_states[:,i])
+                else:
+                    chain = MarkChain(PDF,d,sigprop, priorrange)
                 chain.number = i
                 self.chains.append(chain)
 
