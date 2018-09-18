@@ -530,18 +530,18 @@ class ParallelMarkChain(object):
             # run each chain for given amount and store the results
             for i in self.chains:
                 parallel_samps[:,:,i.number] = i.run(n, thin, progress, pbar, *args)
-                if burn:
-                    for j in self.chains:
-                        burn_samps = j.get_burn_samps(parallel_samps[:,:,j.number])
-                        out = np.zeros([len(burn_samps),self.dim, self.nchains])
-                        out[:,:,i.number] = burn_samps
-                elif ind:
-                    for k in self.chains:
-                        ind_samps = k.get_independent_samps(parallel_samps[:,:,k.number])
-                        out = np.zeros([len(ind_samps), self.dim, self.nchains])
-                        out[:,:,k.number] = ind_samps
-                else:
-                    out = parallel_samps
+            if burn:
+                for j in self.chains:
+                    burn_samps = j.get_burn_samps(parallel_samps[:,:,j.number])
+                    out = np.zeros([len(burn_samps[:,0]),self.dim, self.nchains])
+                    out[:,:,j.number] = burn_samps
+            elif ind:
+                for k in self.chains:
+                    ind_samps = k.get_independent_samps(parallel_samps[:,:,k.number])
+                    out = np.zeros([len(ind_samps[:,0]), self.dim, self.nchains])
+                    out[:,:,k.number] = ind_samps
+            else:
+                out = parallel_samps
 
         if verbose:
             # these are the verbose outputs for extra information about runtime
