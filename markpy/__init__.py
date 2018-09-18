@@ -23,6 +23,7 @@ from .convergence_tests import *
 from .models import *
 from .corner_plot import *
 from .steppers import *
+import numpy as np
 
 __author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
 

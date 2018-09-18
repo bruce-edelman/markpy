@@ -139,3 +139,71 @@ class MetropolisHastings(BaseStepper):
             prob = newp[0] / oldp[0]
             acc = np.random.choice([True, False], p=[prob, 1. - prob])
             return acc, acc * newsamp + (1. - acc) * oldsamp
+
+
+class GibbsStepper(MetropolisHastings):
+    """
+    This is a classs that is resonsible for  the stepper that will implplement Gibbs Sampling for MarkPy
+    """
+    name = 'GibbsStepper'
+    subtype = 'stepper'
+
+    def __init__(self, sigma, model, dim, priorrange, **kwargs):
+        """
+        This is same as in The metroppolis-hastings stepper but does a simple error check to make sure the problem is
+        multi-variate
+        :param sigma: this sigma for the gaussain proposal
+        :param model: the model used (Model Object)
+        :param dim: dimension of problem
+        :param priorrange: priorrange passed from MarkChain
+        :param kwargs: other args needed later (addded in Base maybe)
+        """
+
+        # Check to make sure it is multi-dimensional
+        if dim < 2:
+            raise ValueError("Problem must be multivariate to implement Gibbs Sampling")
+
+        # inherit rest from MHstepper and BaseStepper
+        super(GibbsStepper, self).__init__(sigma, model, dim, priorrange, **kwargs)
+
+    def proposal(self, samp, *args):
+        """
+        This is the overridden proposal function for the Gibbs sampler (uses the same decide function)
+        :param samp: sample we are at (point in parameter space)
+        :param args: args needed to be passed to our model function (and decide function)
+        :return: returns the proposed next step after performing the individual parameter sampling here which
+        is the core of Gibbs Sampling
+        """
+        # Initialize
+        prop_samp = samp
+
+        # loop through each parameter
+        for i in range(self.dim):
+            # propose with np.random.normal around the given parameter we sample from
+            prop_samp[i] = samp[i] + np.random.normal(0., self.sigmaprop)
+            # decide wheter to accept or not then go to next sample
+            acc, prop_samp = self.decide(prop_samp, samp, *args, override=False)
+
+        # return the sampled vector
+        return prop_samp
+
+    def decide(self, newsamp, oldsamp, *args, override=True):
+        """
+        This overrides the decide function if we set out=True, THis is necessary because we only save the sample in our
+        MarkChain once we loop through sampling for each parameter
+        :param newsamp: the proposed sample calculated from the proposal method
+        :param oldsamp: the old sampl of where the chain is at before
+        :param args:  these are necessary args to pass to the self.model.get_posterior(samp, *args) methods help in the
+        model objects
+        :param override: This defaults to True so when calling the decide function in MarkChain we will use this overridden
+        version but when calling decide in the proposal function we can use the original meaning of it. this is necessary
+        for Gibbs Sampling
+        :return: This must always return two things, a bool acc of whether the proposal was accepted or not, and
+        samp which is the newsamp if acc==True and oldsamp if acc==False
+        """
+        if override:
+            return True, newsamp
+        else:
+            super(GibbsStepper, self).decide(newsamp, oldsamp, *args)
+
+
