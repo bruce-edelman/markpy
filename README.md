@@ -1,4 +1,4 @@
-# markpy
+# markPy
 Simple mcmc sampler created for bayesian inference and to learn the basics of mcmc sampling and practice OOP skills in python.
 
 Details of how to run the sampler shown in various test files shown.
