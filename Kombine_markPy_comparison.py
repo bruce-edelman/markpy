@@ -25,7 +25,7 @@ lnpdf = Target(cov)
 
 start_time = time.perf_counter()
 nwalkers = 500
-sampler = kombine.Sampler(nwalkers, ndim, lnpdf, processes=1)
+sampler = kombine.Sampler(nwalkers, ndim, lnpdf)
 p0 = np.random.uniform(-10, 10, size=(nwalkers, ndim))
 p, post, q = sampler.burnin(p0)
 Nsteps = 1000
@@ -42,8 +42,8 @@ ax1.plot(sampler.acceptance_fraction, 'k', alpha=.5, label="Mean Acceptence Rate
 for p, ax in zip(range(ndim), [ax2, ax3]):
     ax.plot(sampler.chain[..., p], alpha=.1)
 ax1.legend(loc='lower right')
+plt.savefig('/home/bedelman/PycharmProjects/markPy/test_plots/kombine_2d-Gaussian_test.png')
 plt.show()
-
 
 
 start_time = time.perf_counter()
@@ -54,8 +54,9 @@ stats[0,:] = means
 stats[1,:] = sigs
 params = ['x1', 'x2']
 sigmaprop = .1
-norm_model = markpy.NormModelAnalytic(params, cov, means, prior_stats=stats)
-mc = markpy.ParallelMarkChain(100, norm_model, ndim, sigmaprop)
+priorrange = np.array([[-10, 10], [-10, 10]])
+norm_model = markpy.NormModelAnalytic(params, cov, means)
+mc = markpy.ParallelMarkChain(100, norm_model, ndim, sigmaprop, priorrange=priorrange, initial_states=p0)
 Nsteps = 5000
 c = mc.run(Nsteps, progress=True, thin=10)
 time_elapsed = round(time.perf_counter()-start_time, 2)
@@ -68,4 +69,5 @@ for p, ax in zip(range(ndim), [ax2, ax3]):
     for walk in range(100):
         ax.plot(c[:, p, walk], alpha=.1)
 ax1.legend(loc='lower right')
+plt.savefig('/home/bedelman/PycharmProjects/markPy/test_plots/markPy_2d-Gaussian_test.png')
 plt.show()

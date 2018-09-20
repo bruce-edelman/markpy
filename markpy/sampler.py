@@ -59,11 +59,13 @@ class MarkChain(object):
         if Model.subtype == 'Base':
             raise TypeError("Model Parameter in MarkChain Must be a Model Class created in models.py that does not have"
                             "subtype of Base")
+
+        # Create instance of the Model class
         self.model = Model
 
         # initialize the first sample in correct data structure
         if priorrange is None and self.model.prior_stats is None:
-            raise ValueError("ERROR: If no prior-range given, Model object must have method get_prior_stats.")
+            raise ValueError("ERROR: If no prior-range given, Model object must have attribute self.prior_stats.")
 
         if priorrange is None:
             self.oldsamp = np.random.normal(self.model.prior_stats[0], self.model.prior_stats[1])
@@ -84,7 +86,7 @@ class MarkChain(object):
             if len(initial_state) != d:
                 raise IndexError("Length of initial_state must equal dimension of problem")
             else:
-                self.oldsamp = [initial_state]
+                self.oldsamp = initial_state
 
         # This needs to be an object isntance of a stepper class and must have subtype != 'Base'
         if stepper is None:
@@ -201,7 +203,6 @@ class MarkChain(object):
         # function return the acceptence ratio of the chain
         return 1.*self.acc/self.N
 
-
     @property
     def AcceptenceArray(self):
         """
@@ -210,7 +211,6 @@ class MarkChain(object):
         :return: numpy array of shape and detail listed above
         """
         return np.array(self.accepted)
-
 
     def is_burned_in(self, samps):
         """
@@ -221,7 +221,6 @@ class MarkChain(object):
         """
         __, isb = self.burnin_nact(samps)
         return isb
-
 
     def burn_idx(self, samps):
         """
@@ -259,13 +258,13 @@ class MarkChain(object):
         # initialize variables for generating the states
         samps = np.zeros([n, self.dim])
         ct = 0
+        self.accepted = np.zeros([n])
         # use our step generator to get out the results
-        for results, acc in self.step(n,pbar, thin, progress, *args):
+        for results, acc in self.step(n, pbar, thin, progress, *args):
             samps[ct,:] = results
-            self.accepted.append(acc)
+            self.accepted[ct] = acc
             ct += 1
         return samps
-
 
     def get_acl(self, samps):
         """
@@ -476,7 +475,7 @@ class ParallelMarkChain(object):
     """
     name = 'ParallelMarkChain'
 
-    def __init__(self, nchains, PDF, d, sigprop, priorrange=None, initial_states=None):
+    def __init__(self, nchains, PDF, d, sigprop, priorrange=None, initial_states=None, stepper=None):
             """
             This is the intialization function of the parallel markchain wrapper class the run mutlple mcmc chains
             :param PDF: This needs to be an instance of the Model class which has a method get_posterior, and also
@@ -487,6 +486,8 @@ class ParallelMarkChain(object):
             range for each of the sampling parameters
             :param initial_states: This is optional if we want to start with an initial states given . Must be of shape
             (ndim, nchains)
+            :param stepper: This is the stepper object we want to use and is passed into the MarkChain objects, This is
+            set to default to the normal MetropolisHastings Stepper must be listed in __steppers__ listed in __init__.py
 
             """
 
@@ -496,7 +497,8 @@ class ParallelMarkChain(object):
             # Create an array of MarkChain objects and set each to have an ordered number attribute
             for i in range(self.nchains):
                 if initial_states is not None:
-                    chain = MarkChain(PDF, d, sigprop, priorrange, initial_states[:,i])
+                    chain = MarkChain(PDF, d, sigprop, priorrange=priorrange, initial_state=initial_states[i,:],
+                                      stepper=stepper)
                 else:
                     chain = MarkChain(PDF,d,sigprop, priorrange)
                 chain.number = i
@@ -611,15 +613,21 @@ class ParallelMarkChain(object):
     @property
     def AcceptenceFraction(self):
         """
-        NEEDS COMMENTING
-        :return:
+        This function is specfici to the ParalleMarkChain. it will calculate the acceptence fraction at each step along
+        the chain. at each step it returns the Fraction of the walkers that accepted that step
+        :return: returns an array of lenght (niter) with the acceptence fraction (Num accept / total num chains) at
+         each step in the chain
         """
+
+        # make sure that each chain is individually burned in before returning this:
         for i in self.chains:
             if not i.is_burned_in:
                 raise ValueError("ERROR: at least one independent chain is not burned in. Run chains for longer")
 
+        # find the lenght of chains
         iterations = len(self.chains[0].accepted)
         a = np.zeros([iterations])
+        # loop through and get the fraction for each iteration
         for ct in range(iterations):
             temp = 0
             for i in self.chains:
