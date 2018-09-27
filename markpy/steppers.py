@@ -57,12 +57,11 @@ class BaseStepper(object):
         """
         return samp
 
-    def decide(self, newsamp, oldsamp, *args):
+    def decide(self, oldsamp, *args):
         """
         This decide function must take in these things for sure:
         #TODO: Once we add more than one stepper we need to update our base class to include the things we can in
         #TODO: common between all our child steppers
-        :param newsamp: the proposed sample calculated from the proposal method
         :param oldsamp: the old sampl of where the chain is at before
         :param args:  these are necessary args to pass to the self.model.get_posterior(samp, *args) methods help in the
         model objects
@@ -70,6 +69,7 @@ class BaseStepper(object):
         samp which is the newsamp if acc==True and oldsamp if acc==False
         """
         acc = np.random.choice([True,False], p=[0.5,0.5])
+        newsamp = self.proposal(oldsamp)
         if acc:
             return acc, newsamp
         elif not acc:
@@ -105,17 +105,19 @@ class MetropolisHastings(BaseStepper):
         """
         return samp+np.random.normal(0., self.sigmaprop, self.dim)
 
-    def decide(self, newsamp, oldsamp, *args):
+    def decide(self, oldsamp, *args):
         """
         This is the decide function that will calculate the if we accept the proposed sample or not and return the next
         sample to save in our markov chain
-        :param newsamp: the proposed sample calculated from the proposal method
         :param oldsamp: the old sampl of where the chain is at before
         :param args:  these are necessary args to pass to the self.model.get_posterior(samp, *args) methods help in the
         model objects
         :return: This must always return two things, a bool acc of whether the proposal was accepted or not, and
         samp which is the newsamp if acc==True and oldsamp if acc==False
         """
+
+        newsamp = self.proposal(oldsamp)
+
         # function calculates the hastings ratio and decides to accept or reject proposed step
         # Check to make sure the proposed sample is still in the allowed range according to the priorrange array
         if not ((np.array([p1 - p2 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][0])]) > 0).all()
@@ -158,6 +160,7 @@ class GibbsStepper(MetropolisHastings):
         :param priorrange: priorrange passed from MarkChain
         :param kwargs: other args needed later (addded in Base maybe)
         """
+        self.acc = False
 
         # Check to make sure it is multi-dimensional
         if dim < 2:
@@ -182,28 +185,50 @@ class GibbsStepper(MetropolisHastings):
             # propose with np.random.normal around the given parameter we sample from
             prop_samp[i] = samp[i] + np.random.normal(0., self.sigmaprop)
             # decide wheter to accept or not then go to next sample
-            acc, prop_samp = self.decide(prop_samp, samp, *args, override=False)
-
+            self.acc, prop_samp = self.decide(samp, *args, propped=prop_samp)
         # return the sampled vector
         return prop_samp
 
-    def decide(self, newsamp, oldsamp, *args, override=True):
+    def decide(self, oldsamp, *args, propped=None):
         """
         This overrides the decide function if we set out=True, THis is necessary because we only save the sample in our
         MarkChain once we loop through sampling for each parameter
-        :param newsamp: the proposed sample calculated from the proposal method
         :param oldsamp: the old sampl of where the chain is at before
         :param args:  these are necessary args to pass to the self.model.get_posterior(samp, *args) methods help in the
         model objects
-        :param override: This defaults to True so when calling the decide function in MarkChain we will use this overridden
-        version but when calling decide in the proposal function we can use the original meaning of it. this is necessary
-        for Gibbs Sampling
+        :param propped: This defaults to None, and if it is none it will generate the proposed sample via the proposal
+        method, if propped is set to anything it will use that as the proposed sample
         :return: This must always return two things, a bool acc of whether the proposal was accepted or not, and
         samp which is the newsamp if acc==True and oldsamp if acc==False
         """
-        if override:
-            return True, newsamp
+
+        if propped is None:
+            newsamp = self.proposal(oldsamp)
+        elif propped.shape != oldsamp.shape:
+            raise ValueError("propped and oldsamp must be set as the same shape")
         else:
-            super(GibbsStepper, self).decide(newsamp, oldsamp, *args)
+            newsamp = propped
 
+        # function calculates the hastings ratio and decides to accept or reject proposed step
+        # Check to make sure the proposed sample is still in the allowed range according to the priorrange array
+        if not ((np.array([p1 - p2 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][0])]) > 0).all()
+            and (np.array([p2 - p1 for p1, p2 in zip(newsamp, np.transpose(self.priorrange)[:][1])]) > 0).all()):
+             # if newsamp is not in the allowed prior range we set accept to False and return the oldsamp instead of the
+             # newsamp
+            acc = False
+            return acc, oldsamp
 
+        # now we know we are accepting with at least some prob so we need probabilities calculated through our Model
+        # class and some the functions we created it with
+        newp = self.model.get_posterior(newsamp, *args)
+        oldp = self.model.get_posterior(oldsamp, *args)
+
+        if newp >= oldp:
+            # if new step is more prob than old we accept immediately and return the new samp
+            acc = True
+            return acc, newsamp
+        else:
+            # oldp is bigger so we only accept the step probablistically as in MH algo
+            prob = newp[0] / oldp[0]
+            acc = np.random.choice([True, False], p=[prob, 1. - prob])
+            return acc, acc * newsamp + (1. - acc) * oldsamp

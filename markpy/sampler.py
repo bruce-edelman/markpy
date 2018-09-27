@@ -127,7 +127,6 @@ class MarkChain(object):
             intermediate_step = 1
         # set the total iterations for pbar
         total = n * intermediate_step
-        newsamp = self.oldsamp
         # setup the progress bar
         if self.number is None: # check if this is being used in ParallelMark Chain object
             with progress_bar(progress, total) as pbar:
@@ -137,8 +136,7 @@ class MarkChain(object):
                     for _ in range(intermediate_step):
 
                         # Use the stepper object to perform whatever kind of step we need
-                        newsamp = self.stepper.proposal(self.oldsamp)
-                        acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
+                        acc, newsamp = self.stepper.decide(self.oldsamp, *args)
 
                         if acc:  # if we accepted a new value update for our AR
                             self.acc += 1
@@ -154,8 +152,7 @@ class MarkChain(object):
                 # loop through our thinning procedure if necessary
                 for _ in range(intermediate_step):
                     # Use the stepper object to perform whatever kind of step we need
-                    newsamp = self.stepper.proposal(self.oldsamp)
-                    acc, newsamp = self.stepper.decide(newsamp, self.oldsamp, *args)
+                    acc, newsamp = self.stepper.decide(self.oldsamp, *args)
                     if acc:  # if we accepted a new value update for our AR
                         self.acc += 1
                     self.oldsamp = newsamp  # reset oldsamp variable for next iteration
