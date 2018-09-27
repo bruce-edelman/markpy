@@ -27,7 +27,7 @@ import numpy as np
 
 __author__ = 'Bruce Edelman <bruce.edelman@ligo.org>'
 
-__version__ = '0.1.0'
+__version__ = '0.1.0_Alpha'
 
 __models__ = {cls.name: cls for cls in (
     models.NormModelInfer, models.RosenbrockAnalytic, models.BaseModel,
@@ -39,6 +39,6 @@ __chains__ = {cls.name: cls for cls in (
 }
 
 __steppers__ = {cls.name: cls for cls in (
-    steppers.BaseStepper, steppers.BaseStepper
+    steppers.BaseStepper, steppers.BaseStepper, steppers.GibbsStepper
 )}
 

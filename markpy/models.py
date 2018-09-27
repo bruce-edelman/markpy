@@ -309,6 +309,10 @@ class NormModelAnalytic(BaseModel):
         as shown in the BaseModel class if not given
         """
 
+        # inherit the __init__ function from the parent class (BaseModel) and use the samp_params value and possible
+        # **kwargs as in the other class definitions in this file
+        super(NormModelAnalytic, self).__init__(samp_params, **kwargs)
+
         # if no sigma is given set up the default array
         if sig is None:
             sig = [1.]*self.dim
@@ -319,9 +323,6 @@ class NormModelAnalytic(BaseModel):
             mean = [0.]*self.dim
         self.mean = mean
 
-        # inherit the __init__ function from the parent class (BaseModel) and use the samp_params value and possible
-        # **kwargs as in the other class definitions in this file
-        super(NormModelAnalytic, self).__init__(samp_params,**kwargs)
 
         # error check to make sure that the given arrays for sig and mean are both the right length
         if len(self.mean) != self.dim or len(self.sig) != self.dim:
