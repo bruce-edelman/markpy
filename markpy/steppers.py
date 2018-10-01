@@ -274,3 +274,39 @@ class StretchStepper(BaseStepper):
         """
         pass
 
+
+class ParallelStretchStepper(StretchStepper):
+    """
+    This is the parallel stretch stepper as shown in:
+    """
+
+    name = "ParallelStretchStepper"
+    subtype = "parallel stepper"
+
+    def __init__(self, a, model, dim, priorrange, **kwargs):
+        """
+
+        :param a:
+        :param model:
+        :param dim:
+        :param priorrange:
+        :param kwargs:
+        """
+        super(ParallelStretchStepper, self).__init__(a, model, dim, priorrange, **kwargs)
+
+    def proposal(self, samp):
+        """
+
+        :param samp:
+        :return:
+        """
+        pass
+
+    def decide(self, oldsamp, *args):
+        """
+
+        :param oldsamp:
+        :param args:
+        :return:
+        """
+        pass
