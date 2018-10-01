@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="2a6aa105-2f75-4e23-ba47-6daea690ebd9" name="Default Changelist" comment="" />
+    <list default="true" id="2a6aa105-2f75-4e23-ba47-6daea690ebd9" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/GibbsSampling_CornerPlot_4-d.png" beforeDir="false" afterPath="$PROJECT_DIR$/GibbsSampling_CornerPlot_4-d.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gibbs_test.py" beforeDir="false" afterPath="$PROJECT_DIR$/gibbs_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/markpy/steppers.py" beforeDir="false" afterPath="$PROJECT_DIR$/markpy/steppers.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -14,6 +18,7 @@
         <counts>
           <entry key="project.closed" value="13" />
           <entry key="project.open.time.11" value="1" />
+          <entry key="project.open.time.16" value="1" />
           <entry key="project.open.time.19" value="1" />
           <entry key="project.open.time.2" value="1" />
           <entry key="project.open.time.21" value="2" />
@@ -22,37 +27,37 @@
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.4" value="7" />
           <entry key="project.open.time.9" value="1" />
-          <entry key="project.opened" value="17" />
+          <entry key="project.opened" value="18" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
           <entry key="cfg" value="4" />
           <entry key="in" value="1" />
-          <entry key="png" value="17" />
-          <entry key="py" value="51" />
+          <entry key="png" value="18" />
+          <entry key="py" value="53" />
           <entry key="versioneer" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Image" value="17" />
+          <entry key="Image" value="18" />
           <entry key="PLAIN_TEXT" value="5" />
-          <entry key="Python" value="53" />
+          <entry key="Python" value="55" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
           <entry key="cfg" value="133" />
           <entry key="dummy" value="75" />
-          <entry key="py" value="42919" />
+          <entry key="py" value="43227" />
           <entry key="versioneer" value="1" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="208" />
-          <entry key="Python" value="42920" />
+          <entry key="Python" value="43228" />
         </counts>
       </usages-collector>
     </session>
@@ -65,8 +70,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9150">
-              <caret line="610" column="28" lean-forward="true" selection-start-line="610" selection-start-column="28" selection-end-line="610" selection-end-column="28" />
+            <state relative-caret-position="9090">
+              <caret line="607" column="28" selection-start-line="607" selection-start-column="28" selection-end-line="607" selection-end-column="28" />
               <folding>
                 <element signature="e#854#873#0" expanded="true" />
               </folding>
@@ -74,20 +79,49 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/markpy/models.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1215">
+            <state relative-caret-position="15">
               <caret line="350" selection-start-line="350" selection-end-line="350" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gibbs_test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="206">
+              <caret line="35" column="33" lean-forward="true" selection-start-line="35" selection-start-column="33" selection-end-line="35" selection-end-column="33" />
+              <folding>
+                <element signature="e#855#873#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/markpy/steppers.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="611">
+              <caret line="239" column="46" selection-start-line="239" selection-start-column="46" selection-end-line="239" selection-end-column="46" />
+              <folding>
+                <marker date="1538428762418" expanded="true" signature="10786:11032" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GibbsSampling_CornerPlot_4-d.png">
+          <provider selected="true" editor-type-id="images" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test_normal_analytic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-128">
-              <caret line="22" column="31" lean-forward="true" selection-start-line="22" selection-start-column="31" selection-end-line="22" selection-end-column="31" />
+            <state relative-caret-position="330">
+              <caret line="22" column="31" selection-start-line="22" selection-start-column="31" selection-end-line="22" selection-end-column="31" />
             </state>
           </provider>
         </entry>
@@ -95,22 +129,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Kombine_markPy_comparison.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="262">
-              <caret line="37" column="61" lean-forward="true" selection-start-line="37" selection-start-column="61" selection-end-line="37" selection-end-column="61" />
+            <state relative-caret-position="480">
+              <caret line="37" column="61" selection-start-line="37" selection-start-column="61" selection-end-line="37" selection-end-column="61" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1807">
-              <caret line="237" selection-start-line="237" selection-end-line="237" />
-              <folding>
-                <marker date="1536867577739" expanded="true" signature="3409:3463" ph="..." />
               </folding>
             </state>
           </provider>
@@ -159,20 +181,20 @@
         <option value="$PROJECT_DIR$/markpy/convergence_tests.py" />
         <option value="$PROJECT_DIR$/parallel_test.py" />
         <option value="$PROJECT_DIR$/test.py" />
-        <option value="$PROJECT_DIR$/markpy/steppers.py" />
         <option value="$PROJECT_DIR$/markpy/__init__.py" />
         <option value="$PROJECT_DIR$/markpy/models.py" />
         <option value="$PROJECT_DIR$/test_normal_analytic.py" />
         <option value="$PROJECT_DIR$/Kombine_markPy_comparison.py" />
         <option value="$PROJECT_DIR$/markpy/sampler.py" />
+        <option value="$PROJECT_DIR$/gibbs_test.py" />
+        <option value="$PROJECT_DIR$/markpy/steppers.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="114" />
-    <option name="y" value="109" />
-    <option name="width" value="1371" />
-    <option name="height" value="689" />
+    <option name="x" value="1600" />
+    <option name="width" value="1920" />
+    <option name="height" value="1080" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -232,7 +254,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Kombine_markPy_comparison">
+  <component name="RunManager" selected="Python.gibbs_test">
     <configuration name="Kombine_markPy_comparison" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="markpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -275,7 +297,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="markPy" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="gibbs_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="markpy" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -287,7 +309,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/markpy/sampler.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/gibbs_test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -361,19 +383,19 @@
     </configuration>
     <list>
       <item itemvalue="Python.example" />
-      <item itemvalue="Python.markPy" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.test_normal_analytic" />
       <item itemvalue="Python.parallel_test" />
       <item itemvalue="Python.Kombine_markPy_comparison" />
+      <item itemvalue="Python.gibbs_test" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.gibbs_test" />
         <item itemvalue="Python.Kombine_markPy_comparison" />
         <item itemvalue="Python.test_normal_analytic" />
         <item itemvalue="Python.parallel_test" />
         <item itemvalue="Python.test" />
-        <item itemvalue="Python.markPy" />
       </list>
     </recent_temporary>
   </component>
@@ -400,14 +422,15 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="27" width="1600" height="873" extended-state="6" />
+    <frame x="1600" y="0" width="1920" height="1080" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.65745854" visible="true" weight="0.30964467" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.65745854" visible="true" weight="0.30959916" />
       <window_info id="Structure" order="1" sideWeight="0.34254143" side_tool="true" weight="0.15038072" />
       <window_info id="Favorites" order="2" sideWeight="0.34081632" side_tool="true" weight="0.32994923" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32968536" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49873096" visible="true" weight="0.25718194" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49873096" visible="true" weight="0.25692964" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.0752394" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -540,16 +563,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/markpy/steppers.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-68">
-          <caret line="178" lean-forward="true" selection-start-line="178" selection-end-line="178" />
-          <folding>
-            <marker date="1537218686221" expanded="true" signature="6400:6405" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test_plots/Parallel_test_4walkers.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -568,23 +581,6 @@
     <entry file="file://$PROJECT_DIR$/test_plots/norm_analytic_8-d.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/test_normal_analytic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-128">
-          <caret line="22" column="31" lean-forward="true" selection-start-line="22" selection-start-column="31" selection-end-line="22" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1807">
-          <caret line="237" selection-start-line="237" selection-end-line="237" />
-          <folding>
-            <marker date="1536867577739" expanded="true" signature="3409:3463" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/test_plots/markPy_2d-Gaussian_test.png">
       <provider selected="true" editor-type-id="images" />
     </entry>
@@ -593,28 +589,65 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/markpy/sampler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9150">
-          <caret line="610" column="28" lean-forward="true" selection-start-line="610" selection-start-column="28" selection-end-line="610" selection-end-column="28" />
+        <state relative-caret-position="9090">
+          <caret line="607" column="28" selection-start-line="607" selection-start-column="28" selection-end-line="607" selection-end-column="28" />
           <folding>
             <element signature="e#854#873#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test_normal_analytic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="22" column="31" selection-start-line="22" selection-start-column="31" selection-end-line="22" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Kombine_markPy_comparison.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="262">
-          <caret line="37" column="61" lean-forward="true" selection-start-line="37" selection-start-column="61" selection-end-line="37" selection-end-column="61" />
+        <state relative-caret-position="480">
+          <caret line="37" column="61" selection-start-line="37" selection-start-column="61" selection-end-line="37" selection-end-column="61" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3525">
+          <caret line="237" selection-start-line="237" selection-end-line="237" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/markpy/models.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1215">
+        <state relative-caret-position="15">
           <caret line="350" selection-start-line="350" selection-end-line="350" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GibbsSampling_CornerPlot_4-d.png">
+      <provider selected="true" editor-type-id="images" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gibbs_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="206">
+          <caret line="35" column="33" lean-forward="true" selection-start-line="35" selection-start-column="33" selection-end-line="35" selection-end-column="33" />
+          <folding>
+            <element signature="e#855#873#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/markpy/steppers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="611">
+          <caret line="239" column="46" selection-start-line="239" selection-start-column="46" selection-end-line="239" selection-end-column="46" />
+          <folding>
+            <marker date="1538428762418" expanded="true" signature="10786:11032" ph="..." />
+          </folding>
         </state>
       </provider>
     </entry>

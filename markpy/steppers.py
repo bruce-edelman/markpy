@@ -232,3 +232,45 @@ class GibbsStepper(MetropolisHastings):
             prob = newp[0] / oldp[0]
             acc = np.random.choice([True, False], p=[prob, 1. - prob])
             return acc, acc * newsamp + (1. - acc) * oldsamp
+
+
+class StretchStepper(BaseStepper):
+    """
+    Thisis a class of stepper that implelemets the not-paralleleeized stretch moved affine-invariant mcmc algorithm
+    shown in  https://gitub.com/dfm/emcee/emcee/moves/stretch.py
+    This was done in emcee based off proposed affine invariant mccmc algorithm by Goodman & Weare (2010).
+    """
+
+    name = "StretchStepper"
+    subtype = "parallel stepper"
+
+    def __init__(self, a, model, dim, priorrange, **kwargs):
+        """
+
+        :param a:
+        :param model:
+        :param dim:
+        :param priorrange:
+        :param kwargs:
+        """
+
+        self.a = a
+        super(StretchStepper, self).__init__(model, dim, priorrange, **kwargs)
+
+    def proposal(self, samp):
+        """
+
+        :param samp:
+        :return:
+        """
+        pass
+
+    def decide(self, oldsamp, *args):
+        """
+
+        :param oldsamp:
+        :param args:
+        :return:
+        """
+        pass
+

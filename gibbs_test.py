@@ -20,7 +20,6 @@ markPy is a python package developed by Bruce Edelman to implement MCMC sampling
 """
 
 import numpy as np
-import matplotlib.pyplot as plt
 import markpy
 
 
@@ -41,10 +40,10 @@ def main():
     stats[1, :] = sigs
     params = ['x1', 'x2', 'x3', 'x4']
     sigmaprop = 0.4
-    norm_model = markpy.NormModelAnalytic(params, cov, means, prior_stats=stats)
+    norm_model = markpy.NormModelAnalytic(params, sigs, means, prior_stats=stats)
     mc = markpy.MarkChain(norm_model, dimension, sigmaprop, stepper=markpy.GibbsStepper)
 
-    Nsteps = 400000
+    Nsteps = 40000
     c = mc.run(Nsteps, progress=True)
 
     chain = np.zeros([len(c[:,0]),len(c[0,:]),1])

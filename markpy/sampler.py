@@ -491,13 +491,16 @@ class ParallelMarkChain(object):
             self.nchains = nchains
             self.chains = []
             self.dim = d
+            if stepper is not None and stepper.name != 'parallel stepper':
+                raise TypeError("Stepper Object passed to ParallelMarkChain must have subtype = parallel stepper")
+
             # Create an array of MarkChain objects and set each to have an ordered number attribute
             for i in range(self.nchains):
                 if initial_states is not None:
-                    chain = MarkChain(PDF, d, sigprop, priorrange=priorrange, initial_state=initial_states[i,:],
+                    chain = MarkChain(PDF, d, sigprop, priorrange=priorrange, initial_state=initial_states[i, :],
                                       stepper=stepper)
                 else:
-                    chain = MarkChain(PDF,d,sigprop, priorrange)
+                    chain = MarkChain(PDF, d, sigprop, priorrange)
                 chain.number = i
                 self.chains.append(chain)
 
@@ -523,7 +526,7 @@ class ParallelMarkChain(object):
         # time calc for verbose
         start_time = time.clock()
 
-        #thinning procedure check
+        # thinning procedure check
         total = n*self.nchains
         if thin is not None:
             if thin <= 0:
